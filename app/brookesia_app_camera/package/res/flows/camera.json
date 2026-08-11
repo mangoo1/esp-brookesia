@@ -1,0 +1,9 @@
+{
+    "type": "screenFlow",
+    "id": "camera_main",
+    "initial": "camera",
+    "screens": [
+        "camera"
+    ],
+    "transitions": []
+}

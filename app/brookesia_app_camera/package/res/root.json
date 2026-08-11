@@ -1,0 +1,18 @@
+{
+    "version": "0.1.0",
+    "assets": [
+        "constants/default.json",
+        "i18n/en.json",
+        "images/index.json",
+        "screens/camera.json",
+        "flows/camera.json"
+    ],
+    "variants": [
+        {
+            "when": "${expr(${env.language} == \"zh_CN\")}",
+            "assets": [
+                "i18n/zh_CN.json"
+            ]
+        }
+    ]
+}

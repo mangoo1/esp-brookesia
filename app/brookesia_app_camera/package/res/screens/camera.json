@@ -1,0 +1,55 @@
+{
+    "type": "viewScreen",
+    "id": "camera",
+    "mountMode": "dynamic",
+    "commonProps": {
+        "scrollable": false
+    },
+    "styleRefs": [
+        "app.page"
+    ],
+    "children": [
+        {
+            "type": "container",
+            "id": "page",
+            "commonProps": {
+                "scrollable": false
+            },
+            "style": {
+                "opacity": 0
+            },
+            "placement": {
+                "mode": "absolute",
+                "x": "${constant.camera.layout.pageX}",
+                "y": "${constant.camera.layout.pageY}",
+                "width": "${constant.camera.layout.pageWidth}",
+                "height": "${constant.camera.layout.pageHeight}"
+            },
+            "children": [
+                {
+                    "type": "label",
+                    "id": "hint",
+                    "styleRefs": [
+                        "app.caption"
+                    ],
+                    "labelProps": {
+                        "text": ""
+                    },
+                    "style": {
+                        "textColor": "#FFFFFF",
+                        "textAlign": "center"
+                    },
+                    "placement": {
+                        "mode": "absolute",
+                        "x": "0dp",
+                        "y": "${constant.camera.layout.hintY}",
+                        "width": "${constant.camera.layout.pageWidth}"
+                    },
+                    "bindings": {
+                        "labelProps.text": "labelProps.text"
+                    }
+                }
+            ]
+        }
+    ]
+}

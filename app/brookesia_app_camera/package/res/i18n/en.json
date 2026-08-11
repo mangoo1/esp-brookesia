@@ -1,0 +1,11 @@
+{
+    "type": "constant",
+    "data": {
+        "camera": {
+            "i18n": {
+                "app_name": "Camera",
+                "hint_starting": "Starting preview..."
+            }
+        }
+    }
+}

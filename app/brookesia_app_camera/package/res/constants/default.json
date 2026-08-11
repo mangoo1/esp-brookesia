@@ -1,0 +1,20 @@
+{
+    "type": "constant",
+    "data": {
+        "camera": {
+            "layout": {
+                "pageX": "0dp",
+                "pageY": "0dp",
+                "pageWidth": "${env.widthDp}",
+                "pageHeight": "${env.heightDp}",
+                "viewfinderY": "414dp",
+                "viewfinderWidth": "800dp",
+                "viewfinderHeight": "452dp",
+                "hintY": "180dp"
+            },
+            "font": {
+                "hint": "24sp"
+            }
+        }
+    }
+}

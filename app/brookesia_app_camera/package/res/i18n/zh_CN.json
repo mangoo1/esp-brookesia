@@ -1,0 +1,11 @@
+{
+    "type": "constant",
+    "data": {
+        "camera": {
+            "i18n": {
+                "app_name": "相机",
+                "hint_starting": "正在启动预览..."
+            }
+        }
+    }
+}

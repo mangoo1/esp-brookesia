@@ -1,0 +1,22 @@
+version: "0.8.1"
+description: ESP-Brookesia native camera app that renders a live MIPI-CSI preview sized for the panel it runs on.
+dependencies:
+  espressif/brookesia_system_core:
+    version: "0.8.*"
+    override_path: ../../system/brookesia_system_core
+    require: public
+
+  espressif/brookesia_service_helper:
+    version: "0.8.*"
+    override_path: ../../service/framework/brookesia_service_helper
+    require: public
+
+  espressif/brookesia_service_video:
+    version: "0.8.*"
+    override_path: ../../service/media/brookesia_service_video
+    require: public
+
+  espressif/brookesia_service_display:
+    version: "0.8.*"
+    override_path: ../../service/media/brookesia_service_display
+    require: public
