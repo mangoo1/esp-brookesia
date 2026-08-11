@@ -293,6 +293,26 @@
                         },
                         {
                             "type": "templateRef",
+                            "id": "sydney",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.time_zone.sydney"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "Australia/Sydney"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "templateRef",
                             "id": "central_europe",
                             "templateId": "menu_item",
                             "overrides": {

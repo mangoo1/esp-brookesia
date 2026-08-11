@@ -186,6 +186,661 @@
                             }
                         ]
                     }
+                },
+                {
+                    "type": "label",
+                    "id": "sleep_caption",
+                    "styleRefs": [
+                        "app.caption"
+                    ],
+                    "labelProps": {
+                        "text": "Screen sleep"
+                    },
+                    "placement": {
+                        "mode": "flow"
+                    },
+                    "bindings": {
+                        "labelProps.text": "labelProps.text"
+                    }
+                },
+                {
+                    "type": "container",
+                    "id": "sleep_card",
+                    "styleRefs": [
+                        "app.card"
+                    ],
+                    "style": {
+                        "padding": "18dp"
+                    },
+                    "layout": {
+                        "type": "flex",
+                        "flexFlow": "column",
+                        "gap": "0dp"
+                    },
+                    "placement": {
+                        "mode": "flow",
+                        "width": "match",
+                        "height": "wrap",
+                        "alignSelf": "stretch"
+                    },
+                    "children": [
+                        {
+                            "type": "templateRef",
+                            "id": "sleep_15s",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.sleep.15s"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "15 seconds"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "templateRef",
+                            "id": "sleep_30s",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.sleep.30s"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "30 seconds"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "templateRef",
+                            "id": "sleep_1m",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.sleep.1m"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "1 minute"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "templateRef",
+                            "id": "sleep_2m",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.sleep.2m"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "2 minutes"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "templateRef",
+                            "id": "sleep_5m",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.sleep.5m"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "5 minutes"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "templateRef",
+                            "id": "sleep_10m",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.sleep.10m"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "10 minutes"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "templateRef",
+                            "id": "sleep_never",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.sleep.never"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "Never"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "label",
+                    "id": "schedule_caption",
+                    "styleRefs": [
+                        "app.caption"
+                    ],
+                    "labelProps": {
+                        "text": "Scheduled screen off"
+                    },
+                    "placement": {
+                        "mode": "flow"
+                    },
+                    "bindings": {
+                        "labelProps.text": "labelProps.text"
+                    }
+                },
+                {
+                    "type": "container",
+                    "id": "schedule_card",
+                    "styleRefs": [
+                        "app.card"
+                    ],
+                    "style": {
+                        "padding": "18dp"
+                    },
+                    "layout": {
+                        "type": "flex",
+                        "flexFlow": "column",
+                        "gap": "0dp"
+                    },
+                    "placement": {
+                        "mode": "flow",
+                        "width": "match",
+                        "height": "wrap",
+                        "alignSelf": "stretch"
+                    },
+                    "children": [
+                        {
+                            "type": "templateRef",
+                            "id": "schedule_enable_row",
+                            "templateId": "switch_row",
+                            "overrides": {
+                                "toggle": {
+                                    "events": [
+                                        {
+                                            "type": "valueChanged",
+                                            "action": "settings.display.schedule.toggle"
+                                        }
+                                    ]
+                                },
+                                "text/title": {
+                                    "labelProps": {
+                                        "text": "Enable schedule"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "label",
+                    "id": "schedule_days_caption",
+                    "styleRefs": [
+                        "app.caption"
+                    ],
+                    "labelProps": {
+                        "text": "Days of week"
+                    },
+                    "placement": {
+                        "mode": "flow"
+                    },
+                    "bindings": {
+                        "labelProps.text": "labelProps.text"
+                    }
+                },
+                {
+                    "type": "container",
+                    "id": "schedule_days_card",
+                    "styleRefs": [
+                        "app.card"
+                    ],
+                    "style": {
+                        "padding": "18dp"
+                    },
+                    "layout": {
+                        "type": "flex",
+                        "flexFlow": "column",
+                        "gap": "0dp"
+                    },
+                    "placement": {
+                        "mode": "flow",
+                        "width": "match",
+                        "height": "wrap",
+                        "alignSelf": "stretch"
+                    },
+                    "children": [
+                        {
+                            "type": "templateRef",
+                            "id": "schedule_day_monday",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.schedule.day.monday"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "Monday"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "templateRef",
+                            "id": "schedule_day_tuesday",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.schedule.day.tuesday"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "Tuesday"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "templateRef",
+                            "id": "schedule_day_wednesday",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.schedule.day.wednesday"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "Wednesday"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "templateRef",
+                            "id": "schedule_day_thursday",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.schedule.day.thursday"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "Thursday"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "templateRef",
+                            "id": "schedule_day_friday",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.schedule.day.friday"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "Friday"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "templateRef",
+                            "id": "schedule_day_saturday",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.schedule.day.saturday"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "Saturday"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "templateRef",
+                            "id": "schedule_day_sunday",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.schedule.day.sunday"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "Sunday"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "label",
+                    "id": "schedule_start_caption",
+                    "styleRefs": [
+                        "app.caption"
+                    ],
+                    "labelProps": {
+                        "text": "Start time"
+                    },
+                    "placement": {
+                        "mode": "flow"
+                    },
+                    "bindings": {
+                        "labelProps.text": "labelProps.text"
+                    }
+                },
+                {
+                    "type": "container",
+                    "id": "schedule_start_card",
+                    "styleRefs": [
+                        "app.card"
+                    ],
+                    "style": {
+                        "padding": "18dp"
+                    },
+                    "layout": {
+                        "type": "flex",
+                        "flexFlow": "column",
+                        "gap": "0dp"
+                    },
+                    "placement": {
+                        "mode": "flow",
+                        "width": "match",
+                        "height": "wrap",
+                        "alignSelf": "stretch"
+                    },
+                    "children": [
+                        {
+                            "type": "templateRef",
+                            "id": "schedule_start_2100",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.schedule.start.2100"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "21:00"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "templateRef",
+                            "id": "schedule_start_2200",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.schedule.start.2200"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "22:00"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "templateRef",
+                            "id": "schedule_start_2300",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.schedule.start.2300"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "23:00"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "templateRef",
+                            "id": "schedule_start_0000",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.schedule.start.0000"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "00:00"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "label",
+                    "id": "schedule_end_caption",
+                    "styleRefs": [
+                        "app.caption"
+                    ],
+                    "labelProps": {
+                        "text": "End time"
+                    },
+                    "placement": {
+                        "mode": "flow"
+                    },
+                    "bindings": {
+                        "labelProps.text": "labelProps.text"
+                    }
+                },
+                {
+                    "type": "container",
+                    "id": "schedule_end_card",
+                    "styleRefs": [
+                        "app.card"
+                    ],
+                    "style": {
+                        "padding": "18dp"
+                    },
+                    "layout": {
+                        "type": "flex",
+                        "flexFlow": "column",
+                        "gap": "0dp"
+                    },
+                    "placement": {
+                        "mode": "flow",
+                        "width": "match",
+                        "height": "wrap",
+                        "alignSelf": "stretch"
+                    },
+                    "children": [
+                        {
+                            "type": "templateRef",
+                            "id": "schedule_end_0600",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.schedule.end.0600"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "06:00"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "templateRef",
+                            "id": "schedule_end_0700",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.schedule.end.0700"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "07:00"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "templateRef",
+                            "id": "schedule_end_0800",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.schedule.end.0800"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "08:00"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "templateRef",
+                            "id": "schedule_end_0900",
+                            "templateId": "menu_item",
+                            "overrides": {
+                                ".": {
+                                    "events": [
+                                        {
+                                            "type": "clicked",
+                                            "action": "settings.display.schedule.end.0900"
+                                        }
+                                    ]
+                                },
+                                "title_box/title": {
+                                    "labelProps": {
+                                        "text": "09:00"
+                                    }
+                                }
+                            }
+                        }
+                    ]
                 }
             ]
         }

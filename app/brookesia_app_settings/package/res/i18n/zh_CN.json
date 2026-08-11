@@ -40,6 +40,7 @@
         "theme.switch.success": "主题已切换",
         "theme.switching": "正在切换主题...",
         "time_zone": "时区",
+        "time_zone.name.AEST-10AEDT,M10.1.0,M4.1.0/3": "澳大利亚/悉尼",
         "time_zone.name.CET-1CEST,M3.5.0/2,M10.5.0/3": "中欧",
         "time_zone.name.CST-8": "中国",
         "time_zone.name.EST5EDT,M3.2.0/2,M11.1.0/2": "美国东部",
@@ -50,8 +51,8 @@
         "time_zone_set_failed": "时区更新失败",
         "wifi": "Wi-Fi",
         "wifi_connect": "连接 Wi-Fi",
-        "wifi_connected_detail": "已连接 - 点击断开",
         "wifi_connect_failed": "连接失败",
+        "wifi_connected_detail": "已连接 - 点击断开",
         "wifi_connecting": "正在连接...",
         "wifi_disconnected": "已断开",
         "wifi_no_available_networks": "暂无可用网络",
@@ -68,7 +69,34 @@
         "wifi_scanning": "正在扫描...",
         "wifi_secured_network": "安全网络",
         "wifi_service_unavailable": "Wi-Fi 服务不可用",
-        "yes": "是"
+        "yes": "是",
+        "sleep.15s": "15秒",
+        "sleep.30s": "30秒",
+        "sleep.1m": "1分钟",
+        "sleep.2m": "2分钟",
+        "sleep.5m": "5分钟",
+        "sleep.10m": "10分钟",
+        "sleep.never": "永不",
+        "schedule_caption": "定时息屏",
+        "schedule_enable": "启用定时",
+        "schedule_days_caption": "重复",
+        "schedule_monday": "星期一",
+        "schedule_tuesday": "星期二",
+        "schedule_wednesday": "星期三",
+        "schedule_thursday": "星期四",
+        "schedule_friday": "星期五",
+        "schedule_saturday": "星期六",
+        "schedule_sunday": "星期日",
+        "schedule_start_caption": "开始时间",
+        "schedule_start_2100": "21:00",
+        "schedule_start_2200": "22:00",
+        "schedule_start_2300": "23:00",
+        "schedule_start_0000": "00:00",
+        "schedule_end_caption": "结束时间",
+        "schedule_end_0600": "06:00",
+        "schedule_end_0700": "07:00",
+        "schedule_end_0800": "08:00",
+        "schedule_end_0900": "09:00"
     },
     "updates": [
         {
@@ -312,6 +340,11 @@
             "value": "美国太平洋"
         },
         {
+            "path": "/time_zone/page/options_card/sydney/title_box/title",
+            "key": "labelProps.text",
+            "value": "澳大利亚/悉尼"
+        },
+        {
             "path": "/time_zone/page/options_card/central_europe/title_box/title",
             "key": "labelProps.text",
             "value": "中欧"
@@ -405,6 +438,146 @@
             "path": "/debug/page/thread_card/thread_stack/title",
             "key": "labelProps.text",
             "value": "栈 HWM 字节"
+        },
+        {
+            "path": "/display/page/sleep_caption",
+            "key": "labelProps.text",
+            "value": "屏幕休眠"
+        },
+        {
+            "path": "/display/page/sleep_card/sleep_15s/title_box/title",
+            "key": "labelProps.text",
+            "value": "15秒"
+        },
+        {
+            "path": "/display/page/sleep_card/sleep_30s/title_box/title",
+            "key": "labelProps.text",
+            "value": "30秒"
+        },
+        {
+            "path": "/display/page/sleep_card/sleep_1m/title_box/title",
+            "key": "labelProps.text",
+            "value": "1分钟"
+        },
+        {
+            "path": "/display/page/sleep_card/sleep_2m/title_box/title",
+            "key": "labelProps.text",
+            "value": "2分钟"
+        },
+        {
+            "path": "/display/page/sleep_card/sleep_5m/title_box/title",
+            "key": "labelProps.text",
+            "value": "5分钟"
+        },
+        {
+            "path": "/display/page/sleep_card/sleep_10m/title_box/title",
+            "key": "labelProps.text",
+            "value": "10分钟"
+        },
+        {
+            "path": "/display/page/sleep_card/sleep_never/title_box/title",
+            "key": "labelProps.text",
+            "value": "永不"
+        },
+        {
+            "path": "/display/page/schedule_caption",
+            "key": "labelProps.text",
+            "value": "定时息屏"
+        },
+        {
+            "path": "/display/page/schedule_card/schedule_enable_row/text/title",
+            "key": "labelProps.text",
+            "value": "启用定时"
+        },
+        {
+            "path": "/display/page/schedule_days_caption",
+            "key": "labelProps.text",
+            "value": "重复"
+        },
+        {
+            "path": "/display/page/schedule_days_card/schedule_day_monday/title_box/title",
+            "key": "labelProps.text",
+            "value": "星期一"
+        },
+        {
+            "path": "/display/page/schedule_days_card/schedule_day_tuesday/title_box/title",
+            "key": "labelProps.text",
+            "value": "星期二"
+        },
+        {
+            "path": "/display/page/schedule_days_card/schedule_day_wednesday/title_box/title",
+            "key": "labelProps.text",
+            "value": "星期三"
+        },
+        {
+            "path": "/display/page/schedule_days_card/schedule_day_thursday/title_box/title",
+            "key": "labelProps.text",
+            "value": "星期四"
+        },
+        {
+            "path": "/display/page/schedule_days_card/schedule_day_friday/title_box/title",
+            "key": "labelProps.text",
+            "value": "星期五"
+        },
+        {
+            "path": "/display/page/schedule_days_card/schedule_day_saturday/title_box/title",
+            "key": "labelProps.text",
+            "value": "星期六"
+        },
+        {
+            "path": "/display/page/schedule_days_card/schedule_day_sunday/title_box/title",
+            "key": "labelProps.text",
+            "value": "星期日"
+        },
+        {
+            "path": "/display/page/schedule_start_caption",
+            "key": "labelProps.text",
+            "value": "开始时间"
+        },
+        {
+            "path": "/display/page/schedule_start_card/schedule_start_2100/title_box/title",
+            "key": "labelProps.text",
+            "value": "21:00"
+        },
+        {
+            "path": "/display/page/schedule_start_card/schedule_start_2200/title_box/title",
+            "key": "labelProps.text",
+            "value": "22:00"
+        },
+        {
+            "path": "/display/page/schedule_start_card/schedule_start_2300/title_box/title",
+            "key": "labelProps.text",
+            "value": "23:00"
+        },
+        {
+            "path": "/display/page/schedule_start_card/schedule_start_0000/title_box/title",
+            "key": "labelProps.text",
+            "value": "00:00"
+        },
+        {
+            "path": "/display/page/schedule_end_caption",
+            "key": "labelProps.text",
+            "value": "结束时间"
+        },
+        {
+            "path": "/display/page/schedule_end_card/schedule_end_0600/title_box/title",
+            "key": "labelProps.text",
+            "value": "06:00"
+        },
+        {
+            "path": "/display/page/schedule_end_card/schedule_end_0700/title_box/title",
+            "key": "labelProps.text",
+            "value": "07:00"
+        },
+        {
+            "path": "/display/page/schedule_end_card/schedule_end_0800/title_box/title",
+            "key": "labelProps.text",
+            "value": "08:00"
+        },
+        {
+            "path": "/display/page/schedule_end_card/schedule_end_0900/title_box/title",
+            "key": "labelProps.text",
+            "value": "09:00"
         }
     ]
 }

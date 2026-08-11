@@ -591,6 +591,11 @@ std::expected<void, std::string> SettingsApp::on_action(
                 return language_result;
             }
         }
+        if (current_page_ == PAGE_DISPLAY) {
+            if (auto display_result = refresh_display_state(context); !display_result) {
+                BROOKESIA_LOGW("Failed to refresh Display page: %1%", display_result.error());
+            }
+        }
         if (current_page_ == PAGE_TIME_ZONE) {
             if (auto time_zone_result = refresh_time_zone_state(context); !time_zone_result) {
                 BROOKESIA_LOGW("Failed to refresh Time zone page: %1%", time_zone_result.error());
@@ -621,6 +626,31 @@ std::expected<void, std::string> SettingsApp::on_action(
         }
         return {};
     }
+
+    
+    if (effective_action == ACTION_DISPLAY_SLEEP_15S) set_sleep_timeout(context, 15);
+    else if (effective_action == ACTION_DISPLAY_SLEEP_30S) set_sleep_timeout(context, 30);
+    else if (effective_action == ACTION_DISPLAY_SLEEP_1M) set_sleep_timeout(context, 60);
+    else if (effective_action == ACTION_DISPLAY_SLEEP_2M) set_sleep_timeout(context, 120);
+    else if (effective_action == ACTION_DISPLAY_SLEEP_5M) set_sleep_timeout(context, 300);
+    else if (effective_action == ACTION_DISPLAY_SLEEP_10M) set_sleep_timeout(context, 600);
+    else if (effective_action == ACTION_DISPLAY_SLEEP_NEVER) set_sleep_timeout(context, 0);
+    else if (effective_action == ACTION_DISPLAY_SCHEDULE_TOGGLE) toggle_schedule(context);
+    else if (effective_action == ACTION_DISPLAY_SCHEDULE_DAY_MONDAY) toggle_schedule_day(context, 0);
+    else if (effective_action == ACTION_DISPLAY_SCHEDULE_DAY_TUESDAY) toggle_schedule_day(context, 1);
+    else if (effective_action == ACTION_DISPLAY_SCHEDULE_DAY_WEDNESDAY) toggle_schedule_day(context, 2);
+    else if (effective_action == ACTION_DISPLAY_SCHEDULE_DAY_THURSDAY) toggle_schedule_day(context, 3);
+    else if (effective_action == ACTION_DISPLAY_SCHEDULE_DAY_FRIDAY) toggle_schedule_day(context, 4);
+    else if (effective_action == ACTION_DISPLAY_SCHEDULE_DAY_SATURDAY) toggle_schedule_day(context, 5);
+    else if (effective_action == ACTION_DISPLAY_SCHEDULE_DAY_SUNDAY) toggle_schedule_day(context, 6);
+    else if (effective_action == ACTION_DISPLAY_SCHEDULE_START_2100) set_schedule_start_time(context, 21, 0);
+    else if (effective_action == ACTION_DISPLAY_SCHEDULE_START_2200) set_schedule_start_time(context, 22, 0);
+    else if (effective_action == ACTION_DISPLAY_SCHEDULE_START_2300) set_schedule_start_time(context, 23, 0);
+    else if (effective_action == ACTION_DISPLAY_SCHEDULE_START_0000) set_schedule_start_time(context, 0, 0);
+    else if (effective_action == ACTION_DISPLAY_SCHEDULE_END_0600) set_schedule_end_time(context, 6, 0);
+    else if (effective_action == ACTION_DISPLAY_SCHEDULE_END_0700) set_schedule_end_time(context, 7, 0);
+    else if (effective_action == ACTION_DISPLAY_SCHEDULE_END_0800) set_schedule_end_time(context, 8, 0);
+    else if (effective_action == ACTION_DISPLAY_SCHEDULE_END_0900) set_schedule_end_time(context, 9, 0);
 
     if (is_theme_action(effective_action)) {
         const std::string next_theme_id = effective_action == "settings.display.dark" ? THEME_DARK : THEME_LIGHT;

@@ -40,6 +40,7 @@
         "theme.switch.success": "Theme switched",
         "theme.switching": "Switching theme...",
         "time_zone": "Time zone",
+        "time_zone.name.AEST-10AEDT,M10.1.0,M4.1.0/3": "Australia/Sydney",
         "time_zone.name.CET-1CEST,M3.5.0/2,M10.5.0/3": "Central Europe",
         "time_zone.name.CST-8": "China",
         "time_zone.name.EST5EDT,M3.2.0/2,M11.1.0/2": "US Eastern",
@@ -50,8 +51,8 @@
         "time_zone_set_failed": "Failed to update time zone",
         "wifi": "Wi-Fi",
         "wifi_connect": "Connect to Wi-Fi",
-        "wifi_connected_detail": "Connected - tap to disconnect",
         "wifi_connect_failed": "Connection failed",
+        "wifi_connected_detail": "Connected - tap to disconnect",
         "wifi_connecting": "Connecting...",
         "wifi_disconnected": "Disconnected",
         "wifi_no_available_networks": "No available networks",
@@ -68,7 +69,34 @@
         "wifi_scanning": "Scanning...",
         "wifi_secured_network": "Secured network",
         "wifi_service_unavailable": "Wi-Fi service unavailable",
-        "yes": "Yes"
+        "yes": "Yes",
+        "sleep.15s": "15 seconds",
+        "sleep.30s": "30 seconds",
+        "sleep.1m": "1 minute",
+        "sleep.2m": "2 minutes",
+        "sleep.5m": "5 minutes",
+        "sleep.10m": "10 minutes",
+        "sleep.never": "Never",
+        "schedule_caption": "Scheduled screen off",
+        "schedule_enable": "Enable schedule",
+        "schedule_days_caption": "Days of week",
+        "schedule_monday": "Monday",
+        "schedule_tuesday": "Tuesday",
+        "schedule_wednesday": "Wednesday",
+        "schedule_thursday": "Thursday",
+        "schedule_friday": "Friday",
+        "schedule_saturday": "Saturday",
+        "schedule_sunday": "Sunday",
+        "schedule_start_caption": "Start time",
+        "schedule_start_2100": "21:00",
+        "schedule_start_2200": "22:00",
+        "schedule_start_2300": "23:00",
+        "schedule_start_0000": "00:00",
+        "schedule_end_caption": "End time",
+        "schedule_end_0600": "06:00",
+        "schedule_end_0700": "07:00",
+        "schedule_end_0800": "08:00",
+        "schedule_end_0900": "09:00"
     },
     "updates": [
         {
@@ -312,6 +340,11 @@
             "value": "US Pacific"
         },
         {
+            "path": "/time_zone/page/options_card/sydney/title_box/title",
+            "key": "labelProps.text",
+            "value": "Australia/Sydney"
+        },
+        {
             "path": "/time_zone/page/options_card/central_europe/title_box/title",
             "key": "labelProps.text",
             "value": "Central Europe"
@@ -405,6 +438,146 @@
             "path": "/debug/page/thread_card/thread_stack/title",
             "key": "labelProps.text",
             "value": "Stack HWM bytes"
+        },
+        {
+            "path": "/display/page/sleep_caption",
+            "key": "labelProps.text",
+            "value": "Screen sleep"
+        },
+        {
+            "path": "/display/page/sleep_card/sleep_15s/title_box/title",
+            "key": "labelProps.text",
+            "value": "15 seconds"
+        },
+        {
+            "path": "/display/page/sleep_card/sleep_30s/title_box/title",
+            "key": "labelProps.text",
+            "value": "30 seconds"
+        },
+        {
+            "path": "/display/page/sleep_card/sleep_1m/title_box/title",
+            "key": "labelProps.text",
+            "value": "1 minute"
+        },
+        {
+            "path": "/display/page/sleep_card/sleep_2m/title_box/title",
+            "key": "labelProps.text",
+            "value": "2 minutes"
+        },
+        {
+            "path": "/display/page/sleep_card/sleep_5m/title_box/title",
+            "key": "labelProps.text",
+            "value": "5 minutes"
+        },
+        {
+            "path": "/display/page/sleep_card/sleep_10m/title_box/title",
+            "key": "labelProps.text",
+            "value": "10 minutes"
+        },
+        {
+            "path": "/display/page/sleep_card/sleep_never/title_box/title",
+            "key": "labelProps.text",
+            "value": "Never"
+        },
+        {
+            "path": "/display/page/schedule_caption",
+            "key": "labelProps.text",
+            "value": "Scheduled screen off"
+        },
+        {
+            "path": "/display/page/schedule_card/schedule_enable_row/text/title",
+            "key": "labelProps.text",
+            "value": "Enable schedule"
+        },
+        {
+            "path": "/display/page/schedule_days_caption",
+            "key": "labelProps.text",
+            "value": "Days of week"
+        },
+        {
+            "path": "/display/page/schedule_days_card/schedule_day_monday/title_box/title",
+            "key": "labelProps.text",
+            "value": "Monday"
+        },
+        {
+            "path": "/display/page/schedule_days_card/schedule_day_tuesday/title_box/title",
+            "key": "labelProps.text",
+            "value": "Tuesday"
+        },
+        {
+            "path": "/display/page/schedule_days_card/schedule_day_wednesday/title_box/title",
+            "key": "labelProps.text",
+            "value": "Wednesday"
+        },
+        {
+            "path": "/display/page/schedule_days_card/schedule_day_thursday/title_box/title",
+            "key": "labelProps.text",
+            "value": "Thursday"
+        },
+        {
+            "path": "/display/page/schedule_days_card/schedule_day_friday/title_box/title",
+            "key": "labelProps.text",
+            "value": "Friday"
+        },
+        {
+            "path": "/display/page/schedule_days_card/schedule_day_saturday/title_box/title",
+            "key": "labelProps.text",
+            "value": "Saturday"
+        },
+        {
+            "path": "/display/page/schedule_days_card/schedule_day_sunday/title_box/title",
+            "key": "labelProps.text",
+            "value": "Sunday"
+        },
+        {
+            "path": "/display/page/schedule_start_caption",
+            "key": "labelProps.text",
+            "value": "Start time"
+        },
+        {
+            "path": "/display/page/schedule_start_card/schedule_start_2100/title_box/title",
+            "key": "labelProps.text",
+            "value": "21:00"
+        },
+        {
+            "path": "/display/page/schedule_start_card/schedule_start_2200/title_box/title",
+            "key": "labelProps.text",
+            "value": "22:00"
+        },
+        {
+            "path": "/display/page/schedule_start_card/schedule_start_2300/title_box/title",
+            "key": "labelProps.text",
+            "value": "23:00"
+        },
+        {
+            "path": "/display/page/schedule_start_card/schedule_start_0000/title_box/title",
+            "key": "labelProps.text",
+            "value": "00:00"
+        },
+        {
+            "path": "/display/page/schedule_end_caption",
+            "key": "labelProps.text",
+            "value": "End time"
+        },
+        {
+            "path": "/display/page/schedule_end_card/schedule_end_0600/title_box/title",
+            "key": "labelProps.text",
+            "value": "06:00"
+        },
+        {
+            "path": "/display/page/schedule_end_card/schedule_end_0700/title_box/title",
+            "key": "labelProps.text",
+            "value": "07:00"
+        },
+        {
+            "path": "/display/page/schedule_end_card/schedule_end_0800/title_box/title",
+            "key": "labelProps.text",
+            "value": "08:00"
+        },
+        {
+            "path": "/display/page/schedule_end_card/schedule_end_0900/title_box/title",
+            "key": "labelProps.text",
+            "value": "09:00"
         }
     ]
 }

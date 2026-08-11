@@ -62,6 +62,13 @@ private:
         std::optional<uint32_t> backlight_output_id;
         std::string backlight_output_name;
         int brightness = 0;
+        int sleep_timeout_s = 0;
+        bool schedule_enabled = false;
+        uint8_t schedule_weekday_mask = 127; // Mon-Sun
+        uint8_t schedule_start_hour = 23;
+        uint8_t schedule_start_minute = 0;
+        uint8_t schedule_end_hour = 7;
+        uint8_t schedule_end_minute = 0;
         int volume = 0;
         bool muted = false;
     };
@@ -140,6 +147,12 @@ private:
     void handle_volume_event(const gui::Event &event);
     void handle_mute_event(const gui::Event &event);
     void set_brightness(system::core::AppContext &context, int brightness);
+    void set_sleep_timeout(system::core::AppContext &context, int timeout_s);
+    void toggle_schedule(system::core::AppContext &context);
+    void toggle_schedule_day(system::core::AppContext &context, uint8_t day_bit);
+    void set_schedule_start_time(system::core::AppContext &context, uint8_t hour, uint8_t min);
+    void set_schedule_end_time(system::core::AppContext &context, uint8_t hour, uint8_t min);
+    void apply_schedule(system::core::AppContext &context);
     void set_volume(system::core::AppContext &context, int volume);
     void set_mute(system::core::AppContext &context, bool muted);
     void bind_storage_service();

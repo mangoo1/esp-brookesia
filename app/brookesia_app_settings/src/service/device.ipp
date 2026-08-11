@@ -76,6 +76,47 @@ std::expected<void, std::string> SettingsApp::refresh_device_state(system::core:
             BROOKESIA_LOGW("Display backlight brightness is unavailable: %1%", brightness_result.error());
             device_ui_state_.display_backlight_supported = false;
         }
+
+        auto service = display_service_binding_.get_service();
+        if (service) {
+            auto sleep_result = service->call_function_sync(
+                "GetSleepTimeout",
+                esp_brookesia::service::FunctionParameterMap{
+                    {"output_id", esp_brookesia::service::FunctionValue(static_cast<double>(*device_ui_state_.backlight_output_id))}
+                },
+                DEVICE_SERVICE_TIMEOUT_MS
+            );
+            if (sleep_result.success && sleep_result.data) {
+                device_ui_state_.sleep_timeout_s = static_cast<int>(std::get<double>(sleep_result.data.value()));
+            } else if (!sleep_result.success) {
+                BROOKESIA_LOGW("Display sleep timeout is unavailable: %s", sleep_result.error_message.c_str());
+            }
+            
+            auto schedule_result = service->call_function_sync(
+                "GetBacklightScheduleConfig",
+                esp_brookesia::service::FunctionParameterMap{
+                    {"output_id", esp_brookesia::service::FunctionValue(static_cast<double>(*device_ui_state_.backlight_output_id))}
+                },
+                DEVICE_SERVICE_TIMEOUT_MS
+            );
+            if (schedule_result.success && schedule_result.has_data() && std::holds_alternative<boost::json::object>(schedule_result.data.value())) {
+                auto schedule_obj = std::get<boost::json::object>(schedule_result.data.value());
+                esp_brookesia::service::display::BacklightScheduleConfig config;
+                if (esp_brookesia::lib_utils::describe_from_json(schedule_obj, config)) {
+                    device_ui_state_.schedule_enabled = config.enable;
+                    if (!config.windows.empty()) {
+                        device_ui_state_.schedule_weekday_mask = config.windows[0].weekday_mask;
+                        device_ui_state_.schedule_start_hour = config.windows[0].start_hour;
+                        device_ui_state_.schedule_start_minute = config.windows[0].start_minute;
+                        device_ui_state_.schedule_end_hour = config.windows[0].end_hour;
+                        device_ui_state_.schedule_end_minute = config.windows[0].end_minute;
+                    }
+                }
+            } else if (!schedule_result.success) {
+                BROOKESIA_LOGW("Display schedule config is unavailable: %s", schedule_result.error_message.c_str());
+            }
+        }
+
     }
 
     if (device_ui_state_.audio_service_ready) {
@@ -326,6 +367,36 @@ std::expected<void, std::string> SettingsApp::refresh_display_state(system::core
         "value",
         std::to_string(enabled ? device_ui_state_.brightness : 0)
     );
+
+    add_binding_update(updates, DISPLAY_SLEEP_15S_VALUE_PATH, "labelProps.text", device_ui_state_.sleep_timeout_s == 15 ? localized_text(current_locale_, "current") : "");
+    add_binding_update(updates, DISPLAY_SLEEP_30S_VALUE_PATH, "labelProps.text", device_ui_state_.sleep_timeout_s == 30 ? localized_text(current_locale_, "current") : "");
+    add_binding_update(updates, DISPLAY_SLEEP_1M_VALUE_PATH, "labelProps.text", device_ui_state_.sleep_timeout_s == 60 ? localized_text(current_locale_, "current") : "");
+    add_binding_update(updates, DISPLAY_SLEEP_2M_VALUE_PATH, "labelProps.text", device_ui_state_.sleep_timeout_s == 120 ? localized_text(current_locale_, "current") : "");
+    add_binding_update(updates, DISPLAY_SLEEP_5M_VALUE_PATH, "labelProps.text", device_ui_state_.sleep_timeout_s == 300 ? localized_text(current_locale_, "current") : "");
+    add_binding_update(updates, DISPLAY_SLEEP_10M_VALUE_PATH, "labelProps.text", device_ui_state_.sleep_timeout_s == 600 ? localized_text(current_locale_, "current") : "");
+    add_binding_update(updates, DISPLAY_SLEEP_NEVER_VALUE_PATH, "labelProps.text", device_ui_state_.sleep_timeout_s == 0 ? localized_text(current_locale_, "current") : "");
+
+    add_binding_update(updates, DISPLAY_SCHEDULE_ENABLE_TOGGLE_PATH, "checked", device_ui_state_.schedule_enabled ? "true" : "false");
+    
+    auto cur = localized_text(current_locale_, "current");
+    add_binding_update(updates, DISPLAY_SCHEDULE_DAY_MONDAY_VALUE_PATH, "labelProps.text", (device_ui_state_.schedule_weekday_mask & 1) ? cur : "");
+    add_binding_update(updates, DISPLAY_SCHEDULE_DAY_TUESDAY_VALUE_PATH, "labelProps.text", (device_ui_state_.schedule_weekday_mask & 2) ? cur : "");
+    add_binding_update(updates, DISPLAY_SCHEDULE_DAY_WEDNESDAY_VALUE_PATH, "labelProps.text", (device_ui_state_.schedule_weekday_mask & 4) ? cur : "");
+    add_binding_update(updates, DISPLAY_SCHEDULE_DAY_THURSDAY_VALUE_PATH, "labelProps.text", (device_ui_state_.schedule_weekday_mask & 8) ? cur : "");
+    add_binding_update(updates, DISPLAY_SCHEDULE_DAY_FRIDAY_VALUE_PATH, "labelProps.text", (device_ui_state_.schedule_weekday_mask & 16) ? cur : "");
+    add_binding_update(updates, DISPLAY_SCHEDULE_DAY_SATURDAY_VALUE_PATH, "labelProps.text", (device_ui_state_.schedule_weekday_mask & 32) ? cur : "");
+    add_binding_update(updates, DISPLAY_SCHEDULE_DAY_SUNDAY_VALUE_PATH, "labelProps.text", (device_ui_state_.schedule_weekday_mask & 64) ? cur : "");
+
+    add_binding_update(updates, DISPLAY_SCHEDULE_START_2100_VALUE_PATH, "labelProps.text", device_ui_state_.schedule_start_hour == 21 ? cur : "");
+    add_binding_update(updates, DISPLAY_SCHEDULE_START_2200_VALUE_PATH, "labelProps.text", device_ui_state_.schedule_start_hour == 22 ? cur : "");
+    add_binding_update(updates, DISPLAY_SCHEDULE_START_2300_VALUE_PATH, "labelProps.text", device_ui_state_.schedule_start_hour == 23 ? cur : "");
+    add_binding_update(updates, DISPLAY_SCHEDULE_START_0000_VALUE_PATH, "labelProps.text", device_ui_state_.schedule_start_hour == 0 ? cur : "");
+
+    add_binding_update(updates, DISPLAY_SCHEDULE_END_0600_VALUE_PATH, "labelProps.text", device_ui_state_.schedule_end_hour == 6 ? cur : "");
+    add_binding_update(updates, DISPLAY_SCHEDULE_END_0700_VALUE_PATH, "labelProps.text", device_ui_state_.schedule_end_hour == 7 ? cur : "");
+    add_binding_update(updates, DISPLAY_SCHEDULE_END_0800_VALUE_PATH, "labelProps.text", device_ui_state_.schedule_end_hour == 8 ? cur : "");
+    add_binding_update(updates, DISPLAY_SCHEDULE_END_0900_VALUE_PATH, "labelProps.text", device_ui_state_.schedule_end_hour == 9 ? cur : "");
+
     return context.gui().set_binding_values(updates);
 }
 
@@ -689,4 +760,102 @@ void SettingsApp::bind_device_service()
 void SettingsApp::release_device_service()
 {
     device_service_binding_.release();
+}
+
+
+void SettingsApp::set_sleep_timeout(system::core::AppContext &context, int timeout_s)
+{
+    if (!SETTINGS_HARDWARE_OPERATIONS_ENABLED) {
+        return;
+    }
+    if (!device_ui_state_.display_service_ready || !device_ui_state_.display_backlight_supported ||
+            !device_ui_state_.backlight_output_id.has_value()) {
+        return;
+    }
+    
+    auto service = display_service_binding_.get_service();
+    if (service) {
+        auto result = service->call_function_sync(
+            "SetSleepTimeout",
+            esp_brookesia::service::FunctionParameterMap{
+                {"output_id", esp_brookesia::service::FunctionValue(static_cast<double>(*device_ui_state_.backlight_output_id))},
+                {"timeout_s", esp_brookesia::service::FunctionValue(static_cast<double>(timeout_s))}
+            },
+            DEVICE_SERVICE_TIMEOUT_MS
+        );
+        if (!result.success) {
+            BROOKESIA_LOGW("Failed to set display sleep timeout: %s", result.error_message.c_str());
+        } else {
+            device_ui_state_.sleep_timeout_s = timeout_s;
+        }
+        if (auto refresh_result = refresh_display_state(context); !refresh_result) {
+            BROOKESIA_LOGW("Failed to refresh display sleep timeout UI: %s", refresh_result.error().c_str());
+        }
+    }
+}
+
+
+void SettingsApp::apply_schedule(system::core::AppContext &context)
+{
+    if (!SETTINGS_HARDWARE_OPERATIONS_ENABLED) return;
+    if (!device_ui_state_.display_service_ready || !device_ui_state_.display_backlight_supported ||
+            !device_ui_state_.backlight_output_id.has_value()) {
+        return;
+    }
+    
+    auto service = display_service_binding_.get_service();
+    if (service) {
+        esp_brookesia::service::display::BacklightScheduleConfig config;
+        config.enable = device_ui_state_.schedule_enabled;
+        esp_brookesia::service::display::BacklightScheduleWindow window;
+        window.weekday_mask = device_ui_state_.schedule_weekday_mask;
+        window.start_hour = device_ui_state_.schedule_start_hour;
+        window.start_minute = device_ui_state_.schedule_start_minute;
+        window.end_hour = device_ui_state_.schedule_end_hour;
+        window.end_minute = device_ui_state_.schedule_end_minute;
+        config.windows.push_back(window);
+        
+        auto config_json = esp_brookesia::lib_utils::describe_to_json(config).as_object();
+        
+        auto result = service->call_function_sync(
+            "SetBacklightScheduleConfig",
+            esp_brookesia::service::FunctionParameterMap{
+                {"output_id", esp_brookesia::service::FunctionValue(static_cast<double>(*device_ui_state_.backlight_output_id))},
+                {"config", esp_brookesia::service::FunctionValue(config_json)}
+            },
+            DEVICE_SERVICE_TIMEOUT_MS
+        );
+        if (!result.success) {
+            BROOKESIA_LOGW("Failed to set display schedule config: %s", result.error_message.c_str());
+        }
+        if (auto refresh_result = refresh_display_state(context); !refresh_result) {
+            BROOKESIA_LOGW("Failed to refresh display schedule config UI: %s", refresh_result.error().c_str());
+        }
+    }
+}
+
+void SettingsApp::toggle_schedule(system::core::AppContext &context)
+{
+    device_ui_state_.schedule_enabled = !device_ui_state_.schedule_enabled;
+    apply_schedule(context);
+}
+
+void SettingsApp::toggle_schedule_day(system::core::AppContext &context, uint8_t day_bit)
+{
+    device_ui_state_.schedule_weekday_mask ^= (1 << day_bit);
+    apply_schedule(context);
+}
+
+void SettingsApp::set_schedule_start_time(system::core::AppContext &context, uint8_t hour, uint8_t min)
+{
+    device_ui_state_.schedule_start_hour = hour;
+    device_ui_state_.schedule_start_minute = min;
+    apply_schedule(context);
+}
+
+void SettingsApp::set_schedule_end_time(system::core::AppContext &context, uint8_t hour, uint8_t min)
+{
+    device_ui_state_.schedule_end_hour = hour;
+    device_ui_state_.schedule_end_minute = min;
+    apply_schedule(context);
 }

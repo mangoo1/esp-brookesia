@@ -31,6 +31,8 @@
 #include "brookesia/service_helper/media/audio.hpp"
 #include "brookesia/service_helper/system/device.hpp"
 #include "brookesia/service_helper/media/display.hpp"
+#include "brookesia/service_display/types.hpp"
+#include "brookesia/lib_utils/describe_helpers.hpp"
 #include "brookesia/service_helper/network/sntp.hpp"
 #include "brookesia/service_helper/system/storage.hpp"
 #include "brookesia/service_helper/framework/utils.hpp"
@@ -161,6 +163,31 @@ static constexpr const char *ACTION_WIFI_PASSWORD_EDIT = "settings.wifi.password
 static constexpr const char *ACTION_WIFI_CONNECT_CANCEL = "settings.wifi.connect.cancel";
 static constexpr const char *ACTION_WIFI_CONNECT_SUBMIT = "settings.wifi.connect.submit";
 static constexpr const char *ACTION_DISPLAY_BRIGHTNESS = "settings.display.brightness";
+static constexpr const char *ACTION_DISPLAY_SLEEP_15S = "settings.display.sleep.15s";
+static constexpr const char *ACTION_DISPLAY_SLEEP_30S = "settings.display.sleep.30s";
+static constexpr const char *ACTION_DISPLAY_SLEEP_1M = "settings.display.sleep.1m";
+static constexpr const char *ACTION_DISPLAY_SLEEP_2M = "settings.display.sleep.2m";
+static constexpr const char *ACTION_DISPLAY_SLEEP_5M = "settings.display.sleep.5m";
+static constexpr const char *ACTION_DISPLAY_SLEEP_10M = "settings.display.sleep.10m";
+static constexpr const char *ACTION_DISPLAY_SLEEP_NEVER = "settings.display.sleep.never";
+
+static constexpr const char *ACTION_DISPLAY_SCHEDULE_TOGGLE = "settings.display.schedule.toggle";
+static constexpr const char *ACTION_DISPLAY_SCHEDULE_DAY_MONDAY = "settings.display.schedule.day.monday";
+static constexpr const char *ACTION_DISPLAY_SCHEDULE_DAY_TUESDAY = "settings.display.schedule.day.tuesday";
+static constexpr const char *ACTION_DISPLAY_SCHEDULE_DAY_WEDNESDAY = "settings.display.schedule.day.wednesday";
+static constexpr const char *ACTION_DISPLAY_SCHEDULE_DAY_THURSDAY = "settings.display.schedule.day.thursday";
+static constexpr const char *ACTION_DISPLAY_SCHEDULE_DAY_FRIDAY = "settings.display.schedule.day.friday";
+static constexpr const char *ACTION_DISPLAY_SCHEDULE_DAY_SATURDAY = "settings.display.schedule.day.saturday";
+static constexpr const char *ACTION_DISPLAY_SCHEDULE_DAY_SUNDAY = "settings.display.schedule.day.sunday";
+static constexpr const char *ACTION_DISPLAY_SCHEDULE_START_2100 = "settings.display.schedule.start.2100";
+static constexpr const char *ACTION_DISPLAY_SCHEDULE_START_2200 = "settings.display.schedule.start.2200";
+static constexpr const char *ACTION_DISPLAY_SCHEDULE_START_2300 = "settings.display.schedule.start.2300";
+static constexpr const char *ACTION_DISPLAY_SCHEDULE_START_0000 = "settings.display.schedule.start.0000";
+static constexpr const char *ACTION_DISPLAY_SCHEDULE_END_0600 = "settings.display.schedule.end.0600";
+static constexpr const char *ACTION_DISPLAY_SCHEDULE_END_0700 = "settings.display.schedule.end.0700";
+static constexpr const char *ACTION_DISPLAY_SCHEDULE_END_0800 = "settings.display.schedule.end.0800";
+static constexpr const char *ACTION_DISPLAY_SCHEDULE_END_0900 = "settings.display.schedule.end.0900";
+
 static constexpr const char *ACTION_SOUND_VOLUME = "settings.sound.volume";
 static constexpr const char *ACTION_SOUND_MUTE = "settings.sound.mute";
 static constexpr const char *ACTION_DEBUG_MEMORY_TOGGLE = "settings.debug.memory.toggle";
@@ -194,6 +221,7 @@ static constexpr const char *TIME_ZONE_OPTION_JAPAN_ACTION = "settings.time_zone
 static constexpr const char *TIME_ZONE_OPTION_EASTERN_ACTION = "settings.time_zone.eastern";
 static constexpr const char *TIME_ZONE_OPTION_PACIFIC_ACTION = "settings.time_zone.pacific";
 static constexpr const char *TIME_ZONE_OPTION_CENTRAL_EUROPE_ACTION = "settings.time_zone.central_europe";
+static constexpr const char *TIME_ZONE_OPTION_SYDNEY_ACTION = "settings.time_zone.sydney";
 static constexpr const char *MORE_TIME_ZONE_VALUE_PATH = "/more/page/language_card/time_zone/value_box/value";
 static constexpr const char *TIME_ZONE_CURRENT_VALUE_PATH = "/time_zone/page/status_card/current/value";
 static constexpr const char *TIME_ZONE_STATE_VALUE_PATH = "/time_zone/page/status_card/state/value_box/value";
@@ -209,12 +237,40 @@ static constexpr const char *TIME_ZONE_OPTION_PACIFIC_VALUE_PATH =
     "/time_zone/page/options_card/pacific/value_box/value";
 static constexpr const char *TIME_ZONE_OPTION_CENTRAL_EUROPE_VALUE_PATH =
     "/time_zone/page/options_card/central_europe/value_box/value";
+static constexpr const char *TIME_ZONE_OPTION_SYDNEY_VALUE_PATH =
+    "/time_zone/page/options_card/sydney/value_box/value";
 static constexpr const char *MY_DEVICE_SYSTEM_NAME_PATH = "/my_device/page/hero/hero_content/os";
 static constexpr const char *MY_DEVICE_SYSTEM_VERSION_PATH = "/my_device/page/hero/hero_content/version";
 static constexpr const char *MY_DEVICE_DEVICE_VALUE_PATH = "/my_device/page/summary_card/device_value";
 static constexpr const char *MY_DEVICE_HARDWARE_GROUP_PARENT = "/my_device/page/hardware_groups";
 static constexpr const char *DISPLAY_BRIGHTNESS_ROW_PATH = "/display/page/brightness_card/brightness_row";
 static constexpr const char *DISPLAY_BRIGHTNESS_SLIDER_PATH = "/display/page/brightness_card/brightness_row/slider";
+
+static constexpr const char *DISPLAY_SLEEP_15S_VALUE_PATH = "/display/page/sleep_card/sleep_15s/value_box/value";
+static constexpr const char *DISPLAY_SLEEP_30S_VALUE_PATH = "/display/page/sleep_card/sleep_30s/value_box/value";
+static constexpr const char *DISPLAY_SLEEP_1M_VALUE_PATH = "/display/page/sleep_card/sleep_1m/value_box/value";
+static constexpr const char *DISPLAY_SLEEP_2M_VALUE_PATH = "/display/page/sleep_card/sleep_2m/value_box/value";
+static constexpr const char *DISPLAY_SLEEP_5M_VALUE_PATH = "/display/page/sleep_card/sleep_5m/value_box/value";
+static constexpr const char *DISPLAY_SLEEP_10M_VALUE_PATH = "/display/page/sleep_card/sleep_10m/value_box/value";
+static constexpr const char *DISPLAY_SLEEP_NEVER_VALUE_PATH = "/display/page/sleep_card/sleep_never/value_box/value";
+
+static constexpr const char *DISPLAY_SCHEDULE_ENABLE_TOGGLE_PATH = "/display/page/schedule_card/schedule_enable_row/toggle";
+static constexpr const char *DISPLAY_SCHEDULE_DAY_MONDAY_VALUE_PATH = "/display/page/schedule_days_card/schedule_day_monday/value_box/value";
+static constexpr const char *DISPLAY_SCHEDULE_DAY_TUESDAY_VALUE_PATH = "/display/page/schedule_days_card/schedule_day_tuesday/value_box/value";
+static constexpr const char *DISPLAY_SCHEDULE_DAY_WEDNESDAY_VALUE_PATH = "/display/page/schedule_days_card/schedule_day_wednesday/value_box/value";
+static constexpr const char *DISPLAY_SCHEDULE_DAY_THURSDAY_VALUE_PATH = "/display/page/schedule_days_card/schedule_day_thursday/value_box/value";
+static constexpr const char *DISPLAY_SCHEDULE_DAY_FRIDAY_VALUE_PATH = "/display/page/schedule_days_card/schedule_day_friday/value_box/value";
+static constexpr const char *DISPLAY_SCHEDULE_DAY_SATURDAY_VALUE_PATH = "/display/page/schedule_days_card/schedule_day_saturday/value_box/value";
+static constexpr const char *DISPLAY_SCHEDULE_DAY_SUNDAY_VALUE_PATH = "/display/page/schedule_days_card/schedule_day_sunday/value_box/value";
+static constexpr const char *DISPLAY_SCHEDULE_START_2100_VALUE_PATH = "/display/page/schedule_start_card/schedule_start_2100/value_box/value";
+static constexpr const char *DISPLAY_SCHEDULE_START_2200_VALUE_PATH = "/display/page/schedule_start_card/schedule_start_2200/value_box/value";
+static constexpr const char *DISPLAY_SCHEDULE_START_2300_VALUE_PATH = "/display/page/schedule_start_card/schedule_start_2300/value_box/value";
+static constexpr const char *DISPLAY_SCHEDULE_START_0000_VALUE_PATH = "/display/page/schedule_start_card/schedule_start_0000/value_box/value";
+static constexpr const char *DISPLAY_SCHEDULE_END_0600_VALUE_PATH = "/display/page/schedule_end_card/schedule_end_0600/value_box/value";
+static constexpr const char *DISPLAY_SCHEDULE_END_0700_VALUE_PATH = "/display/page/schedule_end_card/schedule_end_0700/value_box/value";
+static constexpr const char *DISPLAY_SCHEDULE_END_0800_VALUE_PATH = "/display/page/schedule_end_card/schedule_end_0800/value_box/value";
+static constexpr const char *DISPLAY_SCHEDULE_END_0900_VALUE_PATH = "/display/page/schedule_end_card/schedule_end_0900/value_box/value";
+
 static constexpr const char *SOUND_VOLUME_ROW_PATH = "/sound/page/volume_card/media_volume_row";
 static constexpr const char *SOUND_VOLUME_SLIDER_PATH = "/sound/page/volume_card/media_volume_row/slider";
 static constexpr const char *SOUND_MUTE_ROW_PATH = "/sound/page/silent_card/silent_mode";
@@ -327,13 +383,40 @@ static constexpr std::array<const char *, 2> THEME_ACTIONS = {
     "settings.display.dark",
 };
 
-static constexpr std::array<const char *, 6> TIME_ZONE_ACTIONS = {
+static constexpr std::array<const char *, 7> TIME_ZONE_ACTIONS = {
     TIME_ZONE_OPTION_UTC_ACTION,
     TIME_ZONE_OPTION_CHINA_ACTION,
     TIME_ZONE_OPTION_JAPAN_ACTION,
     TIME_ZONE_OPTION_EASTERN_ACTION,
     TIME_ZONE_OPTION_PACIFIC_ACTION,
     TIME_ZONE_OPTION_CENTRAL_EUROPE_ACTION,
+    TIME_ZONE_OPTION_SYDNEY_ACTION,
+};
+
+static constexpr std::array<const char *, 23> DISPLAY_SLEEP_ACTIONS = {
+    ACTION_DISPLAY_SLEEP_15S,
+    ACTION_DISPLAY_SLEEP_30S,
+    ACTION_DISPLAY_SLEEP_1M,
+    ACTION_DISPLAY_SLEEP_2M,
+    ACTION_DISPLAY_SLEEP_5M,
+    ACTION_DISPLAY_SLEEP_10M,
+    ACTION_DISPLAY_SLEEP_NEVER,
+    ACTION_DISPLAY_SCHEDULE_TOGGLE,
+    ACTION_DISPLAY_SCHEDULE_DAY_MONDAY,
+    ACTION_DISPLAY_SCHEDULE_DAY_TUESDAY,
+    ACTION_DISPLAY_SCHEDULE_DAY_WEDNESDAY,
+    ACTION_DISPLAY_SCHEDULE_DAY_THURSDAY,
+    ACTION_DISPLAY_SCHEDULE_DAY_FRIDAY,
+    ACTION_DISPLAY_SCHEDULE_DAY_SATURDAY,
+    ACTION_DISPLAY_SCHEDULE_DAY_SUNDAY,
+    ACTION_DISPLAY_SCHEDULE_START_2100,
+    ACTION_DISPLAY_SCHEDULE_START_2200,
+    ACTION_DISPLAY_SCHEDULE_START_2300,
+    ACTION_DISPLAY_SCHEDULE_START_0000,
+    ACTION_DISPLAY_SCHEDULE_END_0600,
+    ACTION_DISPLAY_SCHEDULE_END_0700,
+    ACTION_DISPLAY_SCHEDULE_END_0800,
+    ACTION_DISPLAY_SCHEDULE_END_0900,
 };
 
 template <size_t N>
@@ -362,12 +445,14 @@ std::vector<std::string> make_default_action_subscriptions()
 
     std::vector<std::string> actions;
     actions.reserve(
-        NAVIGATION_ACTIONS.size() + THEME_ACTIONS.size() + TIME_ZONE_ACTIONS.size() + WIFI_ACTIONS.size()
+        NAVIGATION_ACTIONS.size() + THEME_ACTIONS.size() + TIME_ZONE_ACTIONS.size() + WIFI_ACTIONS.size() +
+        DISPLAY_SLEEP_ACTIONS.size()
     );
     append_action_subscriptions(actions, NAVIGATION_ACTIONS);
     append_action_subscriptions(actions, THEME_ACTIONS);
     append_action_subscriptions(actions, TIME_ZONE_ACTIONS);
     append_action_subscriptions(actions, WIFI_ACTIONS);
+    append_action_subscriptions(actions, DISPLAY_SLEEP_ACTIONS);
     return actions;
 }
 
@@ -486,7 +571,7 @@ static constexpr std::array<NavigationTarget, 18> NAVIGATION_TARGETS = {
     NavigationTarget{ACTION_OPEN_DEBUG, PAGE_DEBUG},
 };
 
-static constexpr std::array<TimeZoneOption, 6> TIME_ZONE_OPTIONS = {
+static constexpr std::array<TimeZoneOption, 7> TIME_ZONE_OPTIONS = {
     TimeZoneOption{TIME_ZONE_OPTION_UTC_ACTION, "UTC0", TIME_ZONE_OPTION_UTC_VALUE_PATH},
     TimeZoneOption{TIME_ZONE_OPTION_CHINA_ACTION, "CST-8", TIME_ZONE_OPTION_CHINA_VALUE_PATH},
     TimeZoneOption{TIME_ZONE_OPTION_JAPAN_ACTION, "JST-9", TIME_ZONE_OPTION_JAPAN_VALUE_PATH},
@@ -504,6 +589,11 @@ static constexpr std::array<TimeZoneOption, 6> TIME_ZONE_OPTIONS = {
         TIME_ZONE_OPTION_CENTRAL_EUROPE_ACTION,
         "CET-1CEST,M3.5.0/2,M10.5.0/3",
         TIME_ZONE_OPTION_CENTRAL_EUROPE_VALUE_PATH
+    },
+    TimeZoneOption{
+        TIME_ZONE_OPTION_SYDNEY_ACTION,
+        "AEST-10AEDT,M10.1.0,M4.1.0/3",
+        TIME_ZONE_OPTION_SYDNEY_VALUE_PATH
     },
 };
 

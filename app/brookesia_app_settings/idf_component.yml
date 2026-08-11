@@ -33,3 +33,8 @@ dependencies:
     version: "0.8.*"
     override_path: ../../hal/brookesia_hal_interface
     require: public
+
+  espressif/brookesia_service_display:
+    version: "0.8.*"
+    override_path: ../../service/media/brookesia_service_display
+    require: public
