@@ -1,0 +1,86 @@
+# Peripherals Configuration for Guition JC8012P4A1C
+peripherals:
+  # One shared I2C bus carries ES8311, GSL3680 touch, RX8025T RTC and the CSI sensor.
+  - name: i2c_master
+    type: i2c
+    role: master
+    config:
+      port: 0
+      pins:
+        sda: 7
+        scl: 8
+
+  # I2S configuration for full-duplex audio with ES8311
+  - name: i2s_audio_out
+    type: i2s
+    format: "std-out"
+    role: master
+    config: &i2s_config
+      port: 0
+      sample_rate_hz: 48000
+      clk_src: "I2S_CLK_SRC_DEFAULT"
+      mclk_multiple: 256
+      data_bit_width: 16
+      slot_mode: "I2S_SLOT_MODE_STEREO"
+      slot_mask: "I2S_STD_SLOT_BOTH"
+      ws_width: 16
+      pins:
+        mclk: 13
+        bclk: 12
+        ws: 10
+        dout: 9
+        din: 11
+
+  - name: i2s_audio_in
+    type: i2s
+    format: "std-in"
+    role: master
+    config: *i2s_config
+
+  # NS4150 amplifier STD pin, net PA_CTRL on the schematic.
+  # GPIO 20 on this board, not GPIO 53 as on the P4 Function-EV reference design.
+  # With the wrong pin the ES8311 plays normally but the speaker stays silent.
+  - name: gpio_pa_control
+    type: gpio
+    role: io
+    config:
+      pin: 20
+      mode: GPIO_MODE_OUTPUT
+      pull_up: true
+      default_level: 0
+
+  # LDO for MIPI DSI PHY, must be initialized before MIPI. Also powers the CSI PHY.
+  - name: ldo_mipi
+    type: ldo
+    config:
+      chan_id: 3
+      voltage_mv: 2500
+      adjustable: 1
+      owned_by_hw: 0
+
+  # DSI Configuration
+  - name: dsi_display
+    type: dsi
+    config:
+      bus_id: 0
+      data_lanes: 2
+      phy_clk_src: 0
+      lane_bit_rate_mbps: 1500
+
+  # Backlight Control. LCD_PWM on the schematic, driving the MP3202 boost
+  # converter enable pin, which accepts PWM for dimming.
+  - name: ledc_backlight
+    type: ledc
+    version: default
+    config:
+      gpio_num: 23
+      speed_mode: LEDC_LOW_SPEED_MODE
+      channel: 1
+      timer_sel: 1
+      duty: 0
+      # The MP3202 boost converter cannot follow a fast PWM on its enable pin:
+      # at 4 kHz the low phase is only 250 us, far shorter than the part's
+      # shutdown delay, so it stays fully on and the duty cycle has no visible
+      # effect. 1 kHz gives it time to actually chop while staying well above
+      # the flicker threshold.
+      freq_hz: 1000

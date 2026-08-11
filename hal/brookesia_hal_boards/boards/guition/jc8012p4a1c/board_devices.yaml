@@ -1,0 +1,176 @@
+# Devices Configuration for Guition JC8012P4A1C
+devices:
+  - name: audio_dac
+    chip: es8311
+    type: audio_codec
+    version: default
+    config:
+      dac_enabled: true
+      dac_max_channel: 1
+      dac_channel_mask: "1"
+
+    peripherals:
+      - name: gpio_pa_control
+        gain: 6
+        active_level: 1
+
+      - name: i2s_audio_out
+
+      - name: i2c_master
+        address: 0x30
+        frequency: 400000
+
+  - name: audio_adc
+    chip: es8311
+    type: audio_codec
+    version: default
+    config:
+      adc_enabled: true
+      adc_max_channel: 2
+      adc_channel_mask: "11"
+      adc_channel_labels: [RE, FC]
+
+    peripherals:
+      - name: i2s_audio_in
+
+      - name: i2c_master
+        address: 0x30
+        frequency: 400000
+
+  # TF card holder (CN12). SDMMC slot 0, 4-bit, every line pulled up 5.1k.
+  # Slot 0 uses fixed IOMUX pins on ESP32-P4, so the pin numbers are configured
+  # by the SDMMC driver rather than here. The board routes them to
+  # CLK 43 / CMD 44 / D0-D3 39,40,41,42.
+  #
+  # This shares the one SDMMC controller with the esp_hosted Wi-Fi link on slot
+  # 1; see the workaround note in dev_fs_fat_sub_sdmmc.c.
+  - name: fs_sdcard
+    type: fs_fat
+    sub_type: sdmmc
+    version: default
+    config:
+      sub_config:
+        slot: SDMMC_HOST_SLOT_0
+        frequency: SDMMC_FREQ_HIGHSPEED
+        bus_width: 4
+        pins:
+          clk: 0
+          cmd: 0
+          d0: 0
+          d1: 0
+          d2: 0
+          d3: 0
+          d4: 0
+          d5: 0
+          d6: 0
+          d7: 0
+        ldo_chan_id: 4
+
+  # JD9365 800x1280 MIPI-DSI panel.
+  # Timings follow the vendor SDK, NOT the driver's
+  # JD9365_800_1280_PANEL_60HZ_DPI_CONFIG_CF macro (which uses 80MHz /
+  # vsync_bp 12 / vsync_fp 30) - this panel does not lock onto those.
+  # The vendor init sequence lives in lcd_init_cmds.h and is applied by
+  # setup_device.c; the driver's built-in defaults omit {0x80,0x01}, the DSI
+  # lane-count select, which leaves the DPI video path dead while DBI still
+  # answers ID reads with 93 65 04.
+  - name: display_lcd
+    chip: jd9365
+    type: display_lcd
+    sub_type: dsi
+    dependencies:
+      espressif/esp_lcd_jd9365: "*"
+    config:
+      reset_gpio_num: 27
+      rgb_ele_order: LCD_RGB_ELEMENT_ORDER_RGB
+      data_endian: LCD_RGB_DATA_ENDIAN_BIG
+      bits_per_pixel: 16
+      reset_active_high: 0
+      mirror_x: true
+      mirror_y: true
+      swap_xy: false
+      dbi_config:
+        virtual_channel: 0
+        lcd_cmd_bits: 8
+        lcd_param_bits: 8
+      dpi_config:
+        virtual_channel: 0
+        dpi_clk_src: MIPI_DSI_DPI_CLK_SRC_DEFAULT
+        dpi_clock_freq_mhz: 60
+        pixel_format: LCD_COLOR_PIXEL_FORMAT_RGB565
+        in_color_format: LCD_COLOR_FMT_RGB565
+        out_color_format: LCD_COLOR_FMT_RGB565
+        num_fbs: 2
+        flags:
+          use_dma2d: true
+          disable_lp: false
+        video_timing:
+          h_size: 800
+          v_size: 1280
+          hsync_pulse_width: 20
+          hsync_back_porch: 20
+          hsync_front_porch: 40
+          vsync_pulse_width: 4
+          vsync_back_porch: 8
+          vsync_front_porch: 20
+    peripherals:
+      - name: ldo_mipi
+      - name: dsi_display
+
+  # GSL3680 capacitive touch. 7-bit I2C address 0x40 -> 8-bit 0x80.
+  # Both mirror flags are measured on hardware and must match the panel's own
+  # double mirror above. The xiaozhi-esp32 values (false/true) come from a
+  # different display stack and give inverted input on both axes here.
+  - name: lcd_touch
+    chip: gsl3680
+    type: lcd_touch
+    sub_type: i2c
+    version: default
+    dependencies:
+      mangoo1/esp_lcd_touch_gsl3680: "*"
+    config:
+      io_i2c_config:
+        lcd_cmd_bits: 8
+      touch_config:
+        x_max: 800
+        y_max: 1280
+        rst_gpio_num: 22
+        int_gpio_num: 21
+        levels:
+          reset: 0
+          interrupt: 0
+        flags:
+          swap_xy: false
+          mirror_x: true
+          mirror_y: false
+    peripherals:
+      - name: i2c_master
+        i2c_addr: [0x80]
+
+  # Backlight brightness via LEDC PWM on GPIO 23. ESP32-P4 routes LEDC through
+  # the GPIO matrix and GPIO 23 is a valid output pad, so no IOMUX restriction
+  # applies here.
+  - name: lcd_brightness
+    type: ledc_ctrl
+    version: default
+    config:
+      default_percent: 100
+    peripherals:
+      - name: ledc_backlight
+
+  # SC2336 2MP MIPI-CSI sensor on connector CN14.
+  # SCCB shares the main I2C bus; CSI PHY shares ldo_mipi (channel 3, 2.5V).
+  # reset/pwdn are not wired to GPIOs in any known example for this board.
+  - name: camera
+    type: camera
+    version: default
+    sub_type: "csi"
+    config:
+      csi_config:
+        reset_io: -1
+        pwdn_io: -1
+        dont_init_ldo: true
+    peripherals:
+      - name: "i2c_master"
+        frequency: 100000
+      - name: ldo_mipi
