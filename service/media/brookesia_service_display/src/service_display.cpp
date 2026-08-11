@@ -57,12 +57,6 @@ std::expected<boost::json::array, std::string> to_json_array(const T &value)
     return boost::json::array(json_value.as_array());
 }
 
-uint64_t get_current_time_ms()
-{
-    using namespace std::chrono;
-    return static_cast<uint64_t>(duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count());
-}
-
 uint8_t to_area_mask(Display::TouchGestureArea area)
 {
     return static_cast<uint8_t>(area);
@@ -347,6 +341,11 @@ bool Display::on_start()
     BROOKESIA_CHECK_FALSE_RETURN(scheduler->configure_group(get_touch_task_group(), {
         .enable_serial_execution = true,
     }), false, "Failed to configure Display touch task group");
+#if CONFIG_BROOKESIA_SERVICE_DISPLAY_BACKLIGHT_SLEEP_ENABLE
+    BROOKESIA_CHECK_FALSE_RETURN(scheduler->configure_group(get_idle_sleep_task_group(), {
+        .enable_serial_execution = true,
+    }), false, "Failed to configure Display idle sleep task group");
+#endif
     if (!start_touch_tasks()) {
         BROOKESIA_LOGW("Failed to start one or more Display touch tasks");
     }
@@ -378,6 +377,11 @@ bool Display::on_start()
             }
         }
     }
+#if CONFIG_BROOKESIA_SERVICE_DISPLAY_BACKLIGHT_SLEEP_ENABLE
+    if (!start_idle_sleep_task()) {
+        BROOKESIA_LOGW("Failed to start Display idle sleep task");
+    }
+#endif
     return true;
 }
 
@@ -385,7 +389,9 @@ void Display::on_stop()
 {
     BROOKESIA_LOG_TRACE_GUARD_WITH_THIS();
 
-    stop_touch_gesture_tasks();
+#if CONFIG_BROOKESIA_SERVICE_DISPLAY_BACKLIGHT_SLEEP_ENABLE
+    stop_idle_sleep_task();
+#endif
     stop_touch_tasks();
     auto scheduler = get_task_scheduler();
     if ((scheduler != nullptr) && scheduler->is_running()) {
@@ -665,6 +671,13 @@ std::expected<Display::TouchSnapshot, std::string> Display::get_touch_snapshot(s
     auto touch_it = touches_.find(touch_id);
     if (touch_it == touches_.end()) {
         return std::unexpected((boost::format("Bound display touch %1% is not available") % touch_id).str());
+    }
+    const auto &output = outputs_.at(output_id.value());
+    if (output.touch_sleep_mask_active) {
+        TouchSnapshot snapshot = touch_it->second.snapshot;
+        snapshot.points.clear();
+        snapshot.valid = true;
+        return snapshot;
     }
     // Synthetic injection (if active) overrides the hardware snapshot so callers can simulate input.
     if (touch_it->second.injected_points.has_value()) {
@@ -2521,6 +2534,26 @@ void Display::read_touch(uint32_t touch_id)
         cached_snapshot.valid = true;
         snapshot = cached_snapshot;
         output_names = touch_it->second.info.bound_outputs;
+
+#if CONFIG_BROOKESIA_SERVICE_DISPLAY_BACKLIGHT_SLEEP_ENABLE
+        for (const auto &out_name : output_names) {
+            if (auto out_id = find_output_id_locked(out_name); out_id) {
+                auto &output = outputs_.at(out_id.value());
+                if (!snapshot.points.empty()) {
+                    wake_screen_locked(output, "Touch");
+                } else {
+                    if (output.touch_sleep_mask_active) {
+                        output.touch_sleep_mask_active = false;
+                    }
+                    output.last_activity_time_ms = get_current_time_ms();
+                }
+                
+                if (output.touch_sleep_mask_active) {
+                    snapshot.points.clear();
+                }
+            }
+        }
+#endif
     }
 
     emit_touch_updated(output_names, snapshot);

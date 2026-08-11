@@ -57,6 +57,25 @@ menu "ESP-Brookesia: Service Display Configurations"
             help
                 The maximum hardware brightness of the display backlight.
 
+        config BROOKESIA_SERVICE_DISPLAY_BACKLIGHT_SLEEP_ENABLE
+            bool "Enable automatic backlight sleep on idle"
+            default y
+            help
+                Turn off backlight when there is no touch activity for a configured timeout.
+
+        config BROOKESIA_SERVICE_DISPLAY_BACKLIGHT_SLEEP_TIMEOUT_S
+            int "Backlight sleep timeout (seconds)"
+            default 120
+            range 0 3600
+            help
+                Idle time in seconds before sleep. 0 means never sleep.
+
+        config BROOKESIA_SERVICE_DISPLAY_BACKLIGHT_SCHEDULE_ENABLE
+            bool "Enable backlight schedule"
+            default y
+            help
+                Enable backlight schedule to force the display off during configured time windows.
+
         config BROOKESIA_SERVICE_DISPLAY_BACKLIGHT_DEFAULT_ON
             bool "Backlight default on"
             default n

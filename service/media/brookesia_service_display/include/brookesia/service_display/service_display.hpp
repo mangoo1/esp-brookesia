@@ -113,6 +113,8 @@ public:
     std::vector<std::string> get_source_roles() const;
     std::expected<void, std::string> set_touch_gesture_config(uint32_t output_id, TouchGestureConfig config);
     std::expected<TouchGestureConfig, std::string> get_touch_gesture_config(uint32_t output_id) const;
+    std::expected<void, std::string> set_backlight_schedule_config(uint32_t output_id, display::BacklightScheduleConfig config);
+    std::expected<display::BacklightScheduleConfig, std::string> get_backlight_schedule_config(uint32_t output_id) const;
     std::expected<TouchSnapshot, std::string> get_touch_snapshot(std::string_view output_name) const;
     std::expected<hal::display::TouchIface::DriverSpecific, std::string> get_touch_driver_specific(
         std::string_view output_name
@@ -245,6 +247,16 @@ private:
         bool render_scheduled = false;
         uint32_t inflight_frame_id = 0;
         bool dynamic_output = false;
+        bool backlight_sleep_active = false;
+        display::BacklightScheduleConfig backlight_schedule_config;
+        bool backlight_schedule_active = false;
+#ifdef CONFIG_BROOKESIA_SERVICE_DISPLAY_BACKLIGHT_SLEEP_TIMEOUT_S
+        uint32_t backlight_idle_timeout_s = CONFIG_BROOKESIA_SERVICE_DISPLAY_BACKLIGHT_SLEEP_TIMEOUT_S;
+#else
+        uint32_t backlight_idle_timeout_s = 120;
+#endif
+        uint64_t last_activity_time_ms = 0;
+        bool touch_sleep_mask_active = false;
     };
 
     struct SourceContext {
@@ -305,6 +317,10 @@ private:
         double output_id, const boost::json::object &config_json
     );
     std::expected<boost::json::object, std::string> function_get_touch_gesture_config(double output_id);
+    std::expected<void, std::string> function_set_backlight_schedule_config(
+        double output_id, const boost::json::object &config_json
+    );
+    std::expected<boost::json::object, std::string> function_get_backlight_schedule_config(double output_id);
     std::expected<void, std::string> function_set_backlight_brightness(double output_id, double brightness);
     std::expected<double, std::string> function_get_backlight_brightness(double output_id);
     std::expected<void, std::string> function_set_backlight_on_off(double output_id, bool on);
@@ -312,10 +328,58 @@ private:
     std::expected<void, std::string> function_load_data(double output_id);
     std::expected<void, std::string> function_reset_data(double output_id);
 
+    using WakeScreenCallback = std::function<void()>;
+    WakeScreenCallback function_register_wake_source(const std::string &name);
+    std::expected<void, std::string> function_set_sleep_timeout(double output_id, double timeout_s);
+    std::expected<double, std::string> function_get_sleep_timeout(double output_id);
+    void wake_screen_locked(OutputContext &output, const std::string &trigger);
+    void wake_screen_all(const std::string &trigger);
+
     std::vector<FunctionSchema> get_function_schemas() override
     {
         auto function_schemas = Helper::get_function_schemas();
-        return std::vector<FunctionSchema>(function_schemas.begin(), function_schemas.end());
+        std::vector<FunctionSchema> schemas(function_schemas.begin(), function_schemas.end());
+        schemas.push_back(FunctionSchema{
+            .name = "SetSleepTimeout",
+            .description = "Set backlight idle sleep timeout.",
+            .parameters = {
+                { "output_id", "Output ID", FunctionValueType::Number },
+                { "timeout_s", "Timeout in seconds (0 to disable)", FunctionValueType::Number }
+            },
+            .return_value = std::nullopt
+        });
+        schemas.push_back(FunctionSchema{
+            .name = "GetSleepTimeout",
+            .description = "Get backlight idle sleep timeout.",
+            .parameters = {
+                { "output_id", "Output ID", FunctionValueType::Number }
+            },
+            .return_value = FunctionReturnSchema{
+                .type = FunctionValueType::Number,
+                .description = "Timeout in seconds"
+            }
+        });
+        schemas.push_back(FunctionSchema{
+            .name = "SetBacklightScheduleConfig",
+            .description = "Set backlight schedule configuration.",
+            .parameters = {
+                { "output_id", "Output ID", FunctionValueType::Number },
+                { "config", "Schedule config object", FunctionValueType::Object }
+            },
+            .return_value = std::nullopt
+        });
+        schemas.push_back(FunctionSchema{
+            .name = "GetBacklightScheduleConfig",
+            .description = "Get backlight schedule configuration.",
+            .parameters = {
+                { "output_id", "Output ID", FunctionValueType::Number }
+            },
+            .return_value = FunctionReturnSchema{
+                .type = FunctionValueType::Object,
+                .description = "Schedule config object"
+            }
+        });
+        return schemas;
     }
 
     std::vector<EventSchema> get_event_schemas() override
@@ -326,7 +390,7 @@ private:
 
     FunctionHandlerMap get_function_handlers() override
     {
-        return {
+        FunctionHandlerMap handlers = {
             BROOKESIA_SERVICE_HELPER_FUNC_HANDLER_0(
                 Helper, Helper::FunctionId::GetOutputs, function_get_outputs()
             ),
@@ -401,6 +465,68 @@ private:
                 function_reset_data(PARAM)
             ),
         };
+        
+        handlers.insert({"SetSleepTimeout", [this](esp_brookesia::service::FunctionParameterMap &&args) -> esp_brookesia::service::FunctionResult {
+            auto it_id = args.find("output_id");
+            auto it_s = args.find("timeout_s");
+            if (it_id == args.end() || it_s == args.end()) {
+                return {.success = false, .error_message = "Missing parameter"};
+            }
+            auto *id_ptr = std::get_if<double>(&it_id->second);
+            auto *s_ptr = std::get_if<double>(&it_s->second);
+            if (!id_ptr || !s_ptr) {
+                return {.success = false, .error_message = "Type mismatch"};
+            }
+            auto res = function_set_sleep_timeout(*id_ptr, *s_ptr);
+            if (!res) return {.success = false, .error_message = res.error()};
+            return {.success = true};
+        }});
+
+        handlers.insert({"GetSleepTimeout", [this](esp_brookesia::service::FunctionParameterMap &&args) -> esp_brookesia::service::FunctionResult {
+            auto it_id = args.find("output_id");
+            if (it_id == args.end()) {
+                return {.success = false, .error_message = "Missing parameter"};
+            }
+            auto *id_ptr = std::get_if<double>(&it_id->second);
+            if (!id_ptr) {
+                return {.success = false, .error_message = "Type mismatch"};
+            }
+            auto res = function_get_sleep_timeout(*id_ptr);
+            if (!res) return {.success = false, .error_message = res.error()};
+            return {.success = true, .data = FunctionValue(*res)};
+        }});
+
+        handlers.insert({"SetBacklightScheduleConfig", [this](esp_brookesia::service::FunctionParameterMap &&args) -> esp_brookesia::service::FunctionResult {
+            auto it_id = args.find("output_id");
+            auto it_config = args.find("config");
+            if (it_id == args.end() || it_config == args.end()) {
+                return {.success = false, .error_message = "Missing parameter"};
+            }
+            auto *id_ptr = std::get_if<double>(&it_id->second);
+            auto *config_ptr = std::get_if<boost::json::object>(&it_config->second);
+            if (!id_ptr || !config_ptr) {
+                return {.success = false, .error_message = "Type mismatch"};
+            }
+            auto res = function_set_backlight_schedule_config(*id_ptr, *config_ptr);
+            if (!res) return {.success = false, .error_message = res.error()};
+            return {.success = true};
+        }});
+
+        handlers.insert({"GetBacklightScheduleConfig", [this](esp_brookesia::service::FunctionParameterMap &&args) -> esp_brookesia::service::FunctionResult {
+            auto it_id = args.find("output_id");
+            if (it_id == args.end()) {
+                return {.success = false, .error_message = "Missing parameter"};
+            }
+            auto *id_ptr = std::get_if<double>(&it_id->second);
+            if (!id_ptr) {
+                return {.success = false, .error_message = "Type mismatch"};
+            }
+            auto res = function_get_backlight_schedule_config(*id_ptr);
+            if (!res) return {.success = false, .error_message = res.error()};
+            return {.success = true, .data = FunctionValue(*res)};
+        }});
+
+        return handlers;
     }
 
     std::expected<uint32_t, std::string> find_output_id_locked(std::string_view output_name) const;
@@ -467,6 +593,8 @@ private:
     void load_backlight_data_from_storage_locked(OutputContext &output);
     void save_backlight_brightness_data(const std::string &storage_output_id, uint8_t brightness);
     void save_backlight_on_off_data(const std::string &storage_output_id, bool on);
+    void save_backlight_sleep_timeout_data(const std::string &storage_output_id, uint32_t timeout_s);
+    void save_backlight_schedule_data(const std::string &storage_output_id, const display::BacklightScheduleConfig &config);
     void reset_backlight_data_locked(OutputContext &output);
     std::expected<std::vector<uint32_t>, std::string> collect_backlight_output_ids_locked(uint32_t output_id) const;
     std::string get_backlight_storage_output_id(const OutputContext &output) const;
@@ -478,6 +606,14 @@ private:
     bool emit_backlight_on_off_changed(uint32_t output_id, const std::string &output_name, bool on);
     static uint8_t map_percentage_to_hardware(uint8_t percentage, uint8_t min, uint8_t max);
 
+    std::string get_idle_sleep_task_group() const
+    {
+        return get_attributes().name + "_sleep";
+    }
+    bool start_idle_sleep_task();
+    void stop_idle_sleep_task();
+    void process_idle_sleep_task();
+
     mutable std::mutex mutex_;
     std::map<uint32_t, OutputContext> outputs_;
     std::map<uint32_t, SourceContext> sources_;
@@ -485,6 +621,8 @@ private:
     uint32_t next_output_id_ = 1;
     uint32_t next_source_id_ = 1;
     uint32_t next_frame_id_ = 1;
+    lib_utils::TaskScheduler::TaskId idle_sleep_task_id_ = 0;
+    uint32_t next_wake_source_id_ = 1;
     SourceStateChangedSignal source_state_changed_signal_;
     ActiveSourceChangedSignal active_source_changed_signal_;
     OutputRegisteredSignal output_registered_signal_;
