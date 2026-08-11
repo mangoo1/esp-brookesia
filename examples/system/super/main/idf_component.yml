@@ -1,5 +1,50 @@
 ## IDF Component Manager Manifest File
 dependencies:
+  # esp-sr 2.4.4 (hard-pinned by espressif/gmf_ai_audio) aborts the build with
+  # "ESP-SR only support ESP32P4 rev less v3 on ESP-IDF v5.5 or earlier".
+  # 2.4.7 adds the esp32p4_less_v3_idf6 prebuilt libraries this board needs
+  # (ESP32-P4 rev v1.3 + IDF 6.0.2). The registry cannot select it because of
+  # the exact-version pin, so it is overridden from a local checkout of
+  # https://github.com/espressif/esp-sr
+  espressif/esp-sr:
+    version: "2.4.7"
+    override_path: /home/deven/esp/components/esp-sr
+
+  # esp_board_manager 0.5.15 mounts the SD card with its own sdmmc_host_init(),
+  # which cannot succeed while esp_hosted owns the single ESP32-P4 SDMMC
+  # controller. The local copy patches dev_fs_fat_sub_sdmmc.c to reuse that
+  # controller instead. Drop this override once upstream grows the same hook.
+  espressif/esp_board_manager:
+    version: "0.5.15"
+    override_path: /home/deven/esp/components/esp_board_manager
+    require: public
+
+  # The camera fitted to this board answers at 7-bit 0x36 with chip ID 0x5602,
+  # which is an OV02C10 - not the SC2336 the vendor BSP documents. esp_cam_sensor
+  # 2.2.0 ships no OV02C10 driver; upstream has one in esp-video-components
+  # PR #46, still unmerged. The local copy is stock 2.2.0 plus that driver, so
+  # the version esp_video pins (2.2.*) is preserved. Drop this once the driver
+  # lands in a release.
+  espressif/esp_cam_sensor:
+    version: "2.2.0"
+    override_path: /home/deven/esp/components/esp_cam_sensor
+
+  # av_processor exposes no way to rotate the capture pipeline, although the
+  # PPA underneath it can rotate in hardware. The local copy applies
+  # CONFIG_AV_PROCESSOR_VIDEO_ROTATION_DEGREE to every sink once the pipeline
+  # starts, which this board needs because its camera module is mounted turned
+  # 90 degrees relative to the panel.
+  jason-mao/av_processor:
+    version: "0.6.6"
+    override_path: /home/deven/esp/components/av_processor
+
+  # esp_video hardwires the ISP clock to 80 MHz, which cannot sustain
+  # 1920x1080@30 (~62 MP/s) and shows up as "fifo overflow" with dropped frames.
+  # The local copy turns that constant into CONFIG_ESP_VIDEO_ISP_CLK_FREQ_MHZ.
+  espressif/esp_video:
+    version: "2.2.0"
+    override_path: /home/deven/esp/components/esp_video
+
   # Hal
   espressif/brookesia_hal_adaptor:
     version: "0.8.*"
@@ -72,4 +117,9 @@ dependencies:
   espressif/brookesia_app_files:
     version: "0.8.*"
     override_path: ../../../../app/brookesia_app_files
+    require: public
+
+  espressif/brookesia_app_camera:
+    version: "0.8.*"
+    override_path: ../../../../app/brookesia_app_camera
     require: public
