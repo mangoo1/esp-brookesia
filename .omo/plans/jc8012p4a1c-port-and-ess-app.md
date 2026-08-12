@@ -924,6 +924,74 @@ T2 同样不依赖 ESS 数据通路。
 
 ---
 
+## 第七部分：T2 实施结果（2026-08，**已通过**）
+
+### 结论：模板化 + 周期刷新机制成立
+
+实机日志：
+
+```
+LibUtils: Timer started successfully with ID: 17
+LibUtils: TileShellApp started successfully
+LibUtils: First successful refresh of tiles     <- 定时器启动后 1 秒准时触发
+Main:     === System Example Completed ===
+```
+
+三环全通，无 GUI 错误：**模板实例化**、**周期定时器**、**绑定刷新**。
+
+### 关键转变：磁贴不再写在 JSON 里
+
+T1 把 6 个磁贴硬编码在 JSON 中，加一个磁贴就要改 JSON 并重新验证解析。
+T2 改为 **JSON 只提供 `viewTemplate`，C++ 按列表在运行时实例化**：
+
+```cpp
+// system/brookesia_system_tile/src/shell_app.hpp —— 加磁贴只改这里
+std::vector<InfoTile> info_tiles_ = {
+    {"info_energy",  "Energy",  "#364354", "0 kW"},
+    {"info_weather", "Weather", "#1290d8", "20 °C"},
+    ...
+};
+std::vector<AppTile> app_tiles_ = { {"app_camera", "Camera", "#4c494b"}, ... };
+```
+
+用到的 API（与 super 的 `populate_launcher` 同款）：
+- `context.gui().create_view(template_id, parent_path, instance_id)`（`app/gui_runtime.hpp:47-51`）
+- `context.gui().set_binding_values(vector<BindingValueUpdate{absolute_path, key, value}>)`
+  —— `key` 是模板里声明的**绑定名**，不是属性路径
+- `context.timer().start_periodic(name, interval_ms)` + 覆写 `IApp::on_timer`（`app/timer_runtime.hpp:23-25`）
+
+**应用入口区放在可滚动容器内**（`commonProps.scrollable`），以应对 app 数量增长。
+
+### 踩坑记录 5：字号必须用 sp，不能用 dp
+
+首版三处字号写成 `"32dp"` / `"64dp"` / `"24dp"`，运行时报：
+
+```
+Failed to parse viewTemplate asset 'inline asset #1': Field 'font_size' must use sp units
+```
+
+**框架的报错信息非常精确**——直接点名字段和单位要求，定位成本几乎为零。
+这与前几个坑形成对比：值得记住 JSON UI 的解析错误通常是可读的，遇到问题**先认真读报错**。
+
+修正为 `sp` 并按需求缩小：`36sp` / `20sp` / `16sp`。
+
+**注意 dp 与 sp 的分工**：尺寸、间距、圆角用 `dp`；**字号用 `sp`**（随 `font_scale` 缩放）。
+
+### 本轮 JSON 生成方式（吸取 T1 教训）
+
+内嵌 JSON 由脚本生成，写入前 `json.loads()` 自检，写入后**再从 .cpp 中提取回来复验**一次。
+T1 的「不完整 JSON」问题未再出现。此法应作为后续所有内嵌 JSON 的标准做法。
+
+### 下一步（T3 及以后）
+
+- T3：接入第一个真实数据源（ESS），验证刷新与功耗 —— **依赖 ESS 数据通路**
+- T4：背景图轮播（SD 卡，图片需预缩放到 800x1280）
+- T5：点开 Tile 进详情 —— **届时须重新打开 `install_registered_apps`**，
+  并处理「单个 app 安装失败不应中止整个启动」
+- 方向设置项（见第六部分）
+
+---
+
 ## 第六部分：屏幕方向与 RTC（2026-08 调查，**排在 T2 之后**）
 
 ### 方向：做成设置项，重启生效
