@@ -158,7 +158,9 @@ devices:
     peripherals:
       - name: ledc_backlight
 
-  # SC2336 2MP MIPI-CSI sensor on connector CN14.
+  # OV02C10 MIPI-CSI sensor on connector CN14, 7-bit I2C 0x36, chip ID 0x5602.
+  # The vendor BSP documents an SC2336 here; that is wrong for this board.
+  # Only ONE CSI data lane is wired, so the driver must use the 1-lane mode.
   # SCCB shares the main I2C bus; CSI PHY shares ldo_mipi (channel 3, 2.5V).
   # reset/pwdn are not wired to GPIOs in any known example for this board.
   - name: camera
