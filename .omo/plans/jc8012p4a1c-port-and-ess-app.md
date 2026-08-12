@@ -759,6 +759,244 @@ ESS 数据 **10–30 秒刷新足够**；秒级以下毫无价值，反而增加
 
 ---
 
+## 第四部分：T1 架构调研结果（2026-08，可开工）
+
+三个并行 explore agent 的调研结论。关键结论均已由我用直接工具复核过行号
+（其中两个 agent 后期跑偏或陷入自我总结循环，未产出终稿，缺口由我自行补齐）。
+
+### 结论一：自建 System 的门槛比预想低得多
+
+**`core::System` 没有任何纯虚函数**，所有 `on_*` 钩子都有默认实现
+（声明 `system_core/include/.../system/system.hpp:376-409`，默认实现 `src/system/core.cpp:35-144`）。
+因此「最小可编译子类」几乎为空。
+
+真正的风险不在编译，而在 **`init()` 的中止点**——任何一处失败都会让启动直接返回错误。
+以下为必须满足的检查清单（`system_core/src/system/lifecycle.cpp`）：
+
+| 中止点 | 行号 | 应对 |
+| --- | --- | --- |
+| 任务调度器启动失败 | 43-49 | 保证环境正常 |
+| `configure_task_groups()` 失败 | 53-55 | 同上 |
+| 添加 SystemCore/Gui/Timer 服务失败 | 139-147 | 同上 |
+| ServiceManager 启动失败 | 148-150 | 或设 `start_service_manager=false` |
+| 服务绑定失败 | 154-157 | 同上 |
+| **存储布局初始化失败** | 159-162 | Storage 服务须可用 |
+| `on_prepare_startup_overlay()` 返回错误 | 165-168 | 覆写时务必返回成功 |
+| `show_startup_overlay()` 失败 | 170-173 | 或不启用 overlay |
+| **`on_init()` 返回错误** | 180-183 | 覆写时务必返回成功 |
+| `install_registered_apps()` 失败 | 184-189 | **T1 建议设 false** |
+| `install_unpacked_apps()` 失败 | 190-195 | **T1 建议设 false** |
+| `on_start()` 返回错误 | 210-214 | 覆写时务必返回成功 |
+
+**两个默认即「不支持」的钩子**（`src/system/core.cpp:110-117, 122-138`）：
+`on_show_app_keyboard()` 与 `on_show_message_dialog()` 默认返回
+`std::unexpected("... is not supported by this system")`。需要键盘或对话框就必须覆写，
+否则 app 调用时运行时报错。**T1 不需要，但 Tile 详情页若有输入框就要补。**
+
+### 结论二：ShellApp 只需实现一个纯虚函数
+
+`core::IApp`（`system_core/include/.../app/iapp.hpp`）中：
+
+- **`get_manifest()` 是唯一的纯虚函数**（:36）
+- `get_gui_descriptor()` 有默认实现（:43），默认 `root_kind = None` → **不显示任何 GUI**
+- `on_install/on_start/on_pause/on_resume/on_stop/on_action/on_timer` 全部有默认实现
+
+`AppGuiDescriptor`（`app/types.hpp:173-178`）：`root_kind` / `root` / `resources` / `screen_flows`。
+
+### 结论三（重要简化）：T1 可以不碰 LittleFS 资源打包
+
+`GuiRootKind` 有三个值：`None` / `File` / **`JsonString`**（`app/types.hpp:144-149`），
+且 `JsonString` 分支**确已实现**（`system_core/src/system/gui.cpp:513, 554`）。
+
+**意味着 T1 的根文档可以直接内嵌为 C++ 字符串**，无需先打通
+`brookesia_system_super_stage_resources()`（`system_super/cmake/resource_stage.cmake:5`）
+那套资源打包与 LittleFS 部署流程。
+
+这把 T1 的范围又缩小了一大截：**验证架构时不必同时验证资源管线**。
+等 T1 通过、要接真实图片和字体时，再切到 `GuiRootKind::File` + 资源打包。
+
+### 结论四：自建 System 会失去什么（关键决策依据）
+
+| 能力 | 归属 | 自建后是否丢失 | 重建代价 |
+| --- | --- | --- | --- |
+| **底边上滑返回手势** | **识别在框架**（`service_display.cpp` `process_touch_gesture` ~1702，`emit_touch_gesture` 2569-2575，发布 `TouchGesture` 事件）；super 仅订阅（`shell_overlay.cpp:576-583`） | **不丢失** | **很低**：订阅事件 + 调 `stop_app()` |
+| **app GUI 挂载 / 前后台切换** | **核心**（`system_core/src/app/manager.cpp:719-731`，core 在 `on_start` 之前就加载并挂载 app GUI） | **不丢失** | 无 |
+| 状态栏（时间/Wi-Fi） | super（`shell_overlay.cpp:676-702` Wi-Fi 绑定，704-720 SNTP 时钟） | 丢失 | 中，需自己订阅服务并更新绑定 |
+| 启动遮罩 | 可选（core 默认 `on_prepare_startup_overlay` 返回 `{}`；super 的覆写同样是空实现 `system_lifecycle.cpp:243`） | 丢失但**无所谓** | 极低，或直接不做 |
+| app 启动动画 | super（`shell_overlay.cpp:1485-1516`） | 丢失 | 低，纯观感 |
+| 通知页 | super（`system_navigation.cpp:26-59`） | 丢失 | 中，但我们不需要 |
+| 键盘 / 消息对话框 | 需自行覆写（base 默认「不支持」） | 需要才做 | 中 |
+
+**最重要的两条都是好消息**：
+
+1. **返回手势的识别在 Display 服务里，不在 super**。我们只需订阅 `TouchGesture` 事件并决定如何反应。
+   之前担心「Tile 详情页进去出不来」的问题不成立。
+2. **app 的 GUI 挂载与前后台切换由 core 负责**，不是 super。
+   所以「点开 Tile → 打开详情 app → 滑回」这条链路在自建 System 下天然可用。
+
+结论：**自建 System 的代价主要是状态栏和一些观感细节，核心交互能力全部保留。**
+
+### T1 实施蓝图（修订后，范围更小）
+
+```
+MySystem : public core::System
+  Config: gui_backend 必填；install_registered_apps=false；install_package_apps=false
+  on_init():  install_app(make_shared<TileShellApp>())  -> 必须返回成功
+  on_start(): 启动 shell app                              -> 必须返回成功
+
+TileShellApp : public core::IApp
+  get_manifest()        -> 唯一必须实现的纯虚函数
+  get_gui_descriptor()  -> root_kind = JsonString, root = 内嵌的一屏静态 Tile JSON
+  on_start()            -> 挂载首屏
+```
+
+**T1 验收标准**：烧录后屏幕显示一屏静态 Tile，无 init 失败、无 app 安装失败。
+**不做**：数据源、背景轮播、点击详情、状态栏、手势。
+
+### 待确认（T1 过程中解决）
+
+- `install_registered_apps=false` 后，相机 app / Settings 等既有 app 是否还需要能被安装（Tile 要点开它们的话需要）
+- 首屏挂载具体调用哪个 API（`mount_screen` vs `start_screen_flow`），需照 `ShellApp::on_start` 的写法
+- 自建 System 与现有 `examples/system/super` 的关系：新建 example 还是切换现有 example 的 System 类型
+
+---
+
+## 第五部分：T1 实施结果（2026-08，**已通过**）
+
+### 结论：自建 System 架构成立
+
+实机日志（未改动 `system_core` / `system_super` 一行）：
+
+```
+TileSystem init starting
+TileSystem on_init
+SysCore: Native app installed: id(1), manifest(tile_shell)
+SysCore: System core initialized: type(tile)
+TileSystem on_start
+TileShellApp starting... / started successfully
+SysCore: App started: id(1), manifest(tile_shell), total_ms(74)
+=== System Example Completed ===
+```
+
+无 GUI 解析错误、无 init 失败。**最大的架构风险已退掉。**
+
+### 交付物
+
+新组件 `system/brookesia_system_tile/`：
+
+- `TileSystem : core::System` —— `system_type="tile"`，拒绝缺失的 `gui_backend`，
+  **关闭 `install_registered_apps` 与 `install_package_apps`**（避免无关 app 中止启动），
+  不启用 startup overlay；`on_init` 安装 shell app，`on_start` 启动它
+- `TileShellApp : core::IApp` —— 实现唯一的纯虚函数 `get_manifest()`；
+  `get_gui_descriptor()` 返回 `root_kind = JsonString` + 内嵌根文档
+
+改动仅 3 处：新组件、example 的 `idf_component.yml`、example 的 `main.cpp`（切换 System 类型）。
+
+### 关键实现要点
+
+**内联资产可行**（此前不确定）：`assets` 数组的条目**既可是文件路径字符串，也可是资产对象**
+（`gui_interface/src/parser.cpp:825-870`，错误信息原文 "entries must be either file paths or asset objects"）。
+因此 `JsonString` 根文档可以内联声明 screenFlow 与 viewScreen，**T1 全程未接触 LittleFS 资源打包**。
+
+**资产 schema**（照抄现有可用文件）：
+- `viewScreen`: `{type, id, mountMode, commonProps, styleRefs, children}`
+  （范本 `app_settings/package/res/screens/time_zone.json`）
+- `screenFlow`: `{type, id, screens, initial, transitions}`
+  （范本 `system_super/resource/shell/flows/shell_pages.json`）
+
+### 踩坑记录 4：JSON 由代码生成，不要手写
+
+首版内嵌 JSON 有 125 行、带完整样式，**根对象与 `assets` 数组均未闭合**，
+运行时报 `Failed to parse GUI JSON: incomplete JSON`。而交付方声称「已复核 JSON 合法」——该声明不实。
+
+**教训**：
+1. 内嵌的 JSON 字面量**必须用脚本生成并 `json.loads()` 自检后再写入源码**，不要手写、更不要靠肉眼复核
+2. T1 这类验证任务里，JSON 应当**尽可能小**。首版为 6 个磁贴写了完整配色与字号，
+   徒增出错面而对验证目标毫无贡献。替换后的版本只用
+   `layout` / `placement` / `labelProps` / `gridColumn` / `gridRow` 这些**已核实存在**的属性，
+   不碰颜色字号，一次通过
+3. 与前三个坑同源：**JSON UI 是运行时解析的，编译通过不代表可用**
+
+### 下一步（T2）
+
+在此基础上扩展 tile 模板（数值/副标题/单位），并由 ShellApp 定时刷新绑定值（先用假数据）。
+T2 同样不依赖 ESS 数据通路。
+
+---
+
+## 第六部分：屏幕方向与 RTC（2026-08 调查，**排在 T2 之后**）
+
+### 方向：做成设置项，重启生效
+
+**决定**：屏幕方向做成 Settings 里的选项，**不做自动感应**（板上无传感器），**不做热切换**。
+
+#### 硬约束一：无方向传感器
+
+板上设备清单确认：ES8311 音频、GSL3680 触摸、JD9365 屏、摄像头、SD 卡、LEDC 背光。
+**没有 IMU / 加速度计 / 陀螺仪**。方向只能由配置决定。
+（墙面板固定安装，本也不需要自动旋转。）
+
+#### 硬约束二：旋转不可运行时修改
+
+`rotation` 是注册显示时一次性传入的配置字段（`esp_lv_adapter_display.h:121`），
+**没有 runtime setter**。因此设置项只能「保存 + 重启生效」。
+
+#### 硬约束三：横屏多花 2MB 显存
+
+```c
+/* Rotation 90 or 270 always requires 3 buffers for rotation processing. */
+if (rotation == ROTATE_90 || rotation == ROTATE_270) return 3;
+```
+（`esp_lvgl_adapter/src/display/display_manager.c:1667-1673`）
+
+实测当前为 `frame buffers=2, tear mode=DOUBLE_DIRECT`。
+横屏被强制到 3 缓冲，单帧 800x1280x2 ≈ 2MB，**净增 2MB**。
+
+**付得起**：PSRAM 256 Mbit = 32MB，堆中可用约 22.4MB（`Adding pool of 22912K of PSRAM`）。
+但这也解释了为何不能热切换——改方向需重新分配显存并重建显示链路。
+
+#### 好消息：旋转是 PPA 硬件加速
+
+`lvgl_bridge_v9.c:2828-2851` 使用 PPA 的 SRM（Scale-Rotate-Mirror）：
+
+```c
+ppa_srm_rotation_angle_t ppa_rotation;
+case ESP_LV_ADAPTER_ROTATE_90: ppa_rotation = PPA_SRM_ROTATION_ANGLE_270; ...
+```
+
+与相机 app 使用同一硬件单元。**不是软件旋转**，无「软件转 2MB framebuffer」的性能顾虑。
+
+注：面板级 `swap_xy` 不可用（JD9365 不支持，每次启动都报错），但无关紧要——旋转由适配器完成。
+
+#### 实施要点（四处）
+
+| 位置 | 内容 |
+| --- | --- |
+| Storage | 持久化方向值 |
+| 启动时 | 读出后传给适配器 config 的 `rotation` |
+| `environment` | 横屏须把宽高对调为 1280x800，否则布局仍按竖屏计算 |
+| 触摸映射 | 现为 `mirror_x: true, mirror_y: false`，旋转后**必须重新标定** |
+
+**触摸标定只能实机手工验证**，四个角度各有一组正确参数，需逐个试。
+
+#### 为何排在 T2 之后
+
+该改动**同时触及显示链路与触摸标定**。T1 刚验证通过、T2 尚未开始，此时插入会导致
+问题归因困难（分不清是方向改动还是磁贴逻辑）。且 T2 的布局本就要重做（模板化 + 滚动），
+横屏布局一并考虑更省事。
+
+### RTC：芯片在板上，尚未装配
+
+I2C 总线上有 **RX8025T**（见 `board_peripherals.yaml:3` 注释），但
+`board_devices.yaml` 中**未配置为设备**。用户确认芯片确实存在，但**尚未装配完成**。
+
+**价值**：当前开机后系统时间为 1970，须等 SNTP 同步（实测约 18.6 秒）才能启用定时关屏，
+为此专门写了时间守卫。**接入 RTC 后开机瞬间时间即准确**，且断网不受影响。
+
+**状态**：待用户装配完成后再配置——在此之前无法实测，不实现。
+
+---
+
 ## 3. 工作量汇总
 
 | 阶段 | 工作量 | 风险 |
