@@ -6,7 +6,7 @@
 #include "private/utils.hpp"
 #include "brookesia/lib_utils.hpp"
 #include "brookesia/gui_lvgl.hpp"
-#include "brookesia/system_super.hpp"
+#include "brookesia/system_tile/system.hpp"
 #include "modules/general_services.hpp"
 #include "modules/display.hpp"
 
@@ -32,11 +32,11 @@ extern "C" void app_main(void)
         );
 
         /* Create system instance */
-        static std::unique_ptr<system::super::System> system_instance;
-        system_instance = std::make_unique<system::super::System>();
+        static std::unique_ptr<system::tile::TileSystem> system_instance;
+        system_instance = std::make_unique<system::tile::TileSystem>();
 
         /* Configure system */
-        system::super::System::Config config;
+        system::tile::TileSystem::Config config;
         config.core_config.gui_backend = std::make_unique<gui::lvgl::Backend>();
         config.core_config.environment = {
             .width_px = static_cast<int32_t>(display.width()),

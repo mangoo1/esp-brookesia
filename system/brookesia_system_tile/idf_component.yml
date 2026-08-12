@@ -1,0 +1,7 @@
+version: "0.1.0"
+description: ESP-Brookesia custom Tile System
+dependencies:
+  espressif/brookesia_system_core:
+    version: "0.8.*"
+    override_path: ../../system/brookesia_system_core
+    require: public

@@ -104,6 +104,10 @@ dependencies:
     version: "0.8.*"
     override_path: ../../../../system/brookesia_system_super
     require: public
+  espressif/brookesia_system_tile:
+    version: "0.1.0"
+    override_path: ../../../../system/brookesia_system_tile
+    require: public
 
   # Native Apps
   espressif/brookesia_app_settings:
