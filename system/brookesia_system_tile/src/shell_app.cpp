@@ -2,221 +2,13 @@
 #include "brookesia/system_core/app/context.hpp"
 #include "brookesia/lib_utils.hpp"
 #include "brookesia/runtime_manager.hpp"
+#include "brookesia/system_core/app/gui_runtime.hpp"
+#include "brookesia/system_core/app/timer_runtime.hpp"
+#include "shell_json.hpp"
+#include <string>
+#include <vector>
 
 namespace esp_brookesia::system::tile {
-
-static const char* TILE_SHELL_JSON = R"({
-    "version": "0.1.0",
-    "assets": [
-        {
-            "type": "screenFlow",
-            "id": "home_flow",
-            "screens": [
-                "tile_home"
-            ],
-            "initial": "tile_home"
-        },
-        {
-            "type": "viewScreen",
-            "id": "tile_home",
-            "mountMode": "dynamic",
-            "children": [
-                {
-                    "type": "container",
-                    "id": "tile_grid",
-                    "layout": {
-                        "type": "grid",
-                        "gridTemplateColumns": [
-                            "match",
-                            "match"
-                        ],
-                        "gridTemplateRows": [
-                            "match",
-                            "match",
-                            "match"
-                        ],
-                        "gap": "16dp"
-                    },
-                    "placement": {
-                        "mode": "flow",
-                        "width": "match",
-                        "height": "match"
-                    },
-                    "children": [
-                        {
-                            "type": "container",
-                            "id": "tile_0",
-                            "layout": {
-                                "type": "flex",
-                                "flexFlow": "column",
-                                "mainAlign": "center",
-                                "crossAlign": "center"
-                            },
-                            "placement": {
-                                "mode": "flow",
-                                "gridColumn": 0,
-                                "gridRow": 0,
-                                "alignSelf": "stretch"
-                            },
-                            "children": [
-                                {
-                                    "type": "label",
-                                    "id": "tile_0_label",
-                                    "labelProps": {
-                                        "text": "ESS"
-                                    },
-                                    "placement": {
-                                        "mode": "flow"
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "type": "container",
-                            "id": "tile_1",
-                            "layout": {
-                                "type": "flex",
-                                "flexFlow": "column",
-                                "mainAlign": "center",
-                                "crossAlign": "center"
-                            },
-                            "placement": {
-                                "mode": "flow",
-                                "gridColumn": 1,
-                                "gridRow": 0,
-                                "alignSelf": "stretch"
-                            },
-                            "children": [
-                                {
-                                    "type": "label",
-                                    "id": "tile_1_label",
-                                    "labelProps": {
-                                        "text": "Weather"
-                                    },
-                                    "placement": {
-                                        "mode": "flow"
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "type": "container",
-                            "id": "tile_2",
-                            "layout": {
-                                "type": "flex",
-                                "flexFlow": "column",
-                                "mainAlign": "center",
-                                "crossAlign": "center"
-                            },
-                            "placement": {
-                                "mode": "flow",
-                                "gridColumn": 0,
-                                "gridRow": 1,
-                                "alignSelf": "stretch"
-                            },
-                            "children": [
-                                {
-                                    "type": "label",
-                                    "id": "tile_2_label",
-                                    "labelProps": {
-                                        "text": "News"
-                                    },
-                                    "placement": {
-                                        "mode": "flow"
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "type": "container",
-                            "id": "tile_3",
-                            "layout": {
-                                "type": "flex",
-                                "flexFlow": "column",
-                                "mainAlign": "center",
-                                "crossAlign": "center"
-                            },
-                            "placement": {
-                                "mode": "flow",
-                                "gridColumn": 1,
-                                "gridRow": 1,
-                                "alignSelf": "stretch"
-                            },
-                            "children": [
-                                {
-                                    "type": "label",
-                                    "id": "tile_3_label",
-                                    "labelProps": {
-                                        "text": "Stocks"
-                                    },
-                                    "placement": {
-                                        "mode": "flow"
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "type": "container",
-                            "id": "tile_4",
-                            "layout": {
-                                "type": "flex",
-                                "flexFlow": "column",
-                                "mainAlign": "center",
-                                "crossAlign": "center"
-                            },
-                            "placement": {
-                                "mode": "flow",
-                                "gridColumn": 0,
-                                "gridRow": 2,
-                                "alignSelf": "stretch"
-                            },
-                            "children": [
-                                {
-                                    "type": "label",
-                                    "id": "tile_4_label",
-                                    "labelProps": {
-                                        "text": "Camera"
-                                    },
-                                    "placement": {
-                                        "mode": "flow"
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "type": "container",
-                            "id": "tile_5",
-                            "layout": {
-                                "type": "flex",
-                                "flexFlow": "column",
-                                "mainAlign": "center",
-                                "crossAlign": "center"
-                            },
-                            "placement": {
-                                "mode": "flow",
-                                "gridColumn": 1,
-                                "gridRow": 2,
-                                "alignSelf": "stretch"
-                            },
-                            "children": [
-                                {
-                                    "type": "label",
-                                    "id": "tile_5_label",
-                                    "labelProps": {
-                                        "text": "Settings"
-                                    },
-                                    "placement": {
-                                        "mode": "flow"
-                                    }
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        }
-    ]
-})";
 
 core::AppManifest TileShellApp::get_manifest() const
 {
@@ -258,14 +50,110 @@ std::expected<void, std::string> TileShellApp::on_start(core::AppContext &contex
 {
     BROOKESIA_LOGI("TileShellApp starting...");
     context_ = &context;
+
+    std::vector<gui::BindingValueUpdate> binding_updates;
+
+    // Create info tiles
+    for (const auto& tile : info_tiles_) {
+        auto create_result = context.gui().create_view(
+            "info_tile_template",
+            "tile_home/root_container/info_zone",
+            tile.id
+        );
+        if (!create_result) {
+            BROOKESIA_LOGE("Failed to create info tile %s: %s", tile.id.c_str(), create_result.error().c_str());
+            continue;
+        }
+        
+        std::string instance_path = "tile_home/root_container/info_zone/" + tile.id;
+        binding_updates.push_back({instance_path, "bgColor", tile.color});
+        binding_updates.push_back({instance_path + "/title_label", "title", tile.title});
+        binding_updates.push_back({instance_path + "/value_label", "value", tile.initial_value});
+    }
+
+    // Create app tiles
+    for (const auto& tile : app_tiles_) {
+        auto create_result = context.gui().create_view(
+            "app_tile_template",
+            "tile_home/root_container/apps_zone",
+            tile.id
+        );
+        if (!create_result) {
+            BROOKESIA_LOGE("Failed to create app tile %s: %s", tile.id.c_str(), create_result.error().c_str());
+            continue;
+        }
+
+        std::string instance_path = "tile_home/root_container/apps_zone/" + tile.id;
+        binding_updates.push_back({instance_path, "bgColor", tile.color});
+        binding_updates.push_back({instance_path + "/app_title_label", "title", tile.title});
+    }
+
+    if (!binding_updates.empty()) {
+        auto update_result = context.gui().set_binding_values(binding_updates);
+        if (!update_result) {
+            BROOKESIA_LOGE("Failed to set initial binding values");
+        }
+    }
+
+    auto timer_result = context.timer().start_periodic("tile_refresh", 1000);
+    if (timer_result) {
+        timer_id_ = *timer_result;
+        BROOKESIA_LOGI("Timer started successfully with ID: %llu", (unsigned long long)timer_id_);
+    } else {
+        BROOKESIA_LOGE("Failed to start timer: %s", timer_result.error().c_str());
+    }
+
     BROOKESIA_LOGI("TileShellApp started successfully");
     return {};
 }
 
 std::expected<void, std::string> TileShellApp::on_stop(core::AppContext &context)
 {
-    (void)context;
+    if (timer_id_ != core::INVALID_TIMER_ID) {
+        context.timer().stop(timer_id_);
+        timer_id_ = core::INVALID_TIMER_ID;
+    }
     context_ = nullptr;
+    return {};
+}
+
+std::expected<void, std::string> TileShellApp::on_timer(core::AppContext &context, core::TimerId timer_id, std::string_view name)
+{
+    if (timer_id != timer_id_) return {};
+
+    fake_counter_++;
+    
+    std::vector<gui::BindingValueUpdate> binding_updates;
+    
+    // Refresh info tiles with fake data
+    for (auto& tile : info_tiles_) {
+        std::string instance_path = "tile_home/root_container/info_zone/" + tile.id;
+        std::string new_value;
+        
+        if (tile.id == "info_energy") {
+            new_value = std::to_string(fake_counter_ * 2) + " kW";
+        } else if (tile.id == "info_weather") {
+            new_value = std::to_string(20 + (fake_counter_ % 5)) + " °C";
+        } else if (tile.id == "info_news") {
+            new_value = "News " + std::to_string(fake_counter_);
+        } else if (tile.id == "info_stocks") {
+            new_value = (fake_counter_ % 2 == 0 ? "+" : "-") + std::to_string(1 + (fake_counter_ % 3)) + ".0%";
+        } else {
+            new_value = std::to_string(fake_counter_);
+        }
+        
+        tile.initial_value = new_value;
+        binding_updates.push_back({instance_path + "/value_label", "value", new_value});
+    }
+
+    if (!binding_updates.empty()) {
+        auto update_result = context.gui().set_binding_values(binding_updates);
+        if (!update_result) {
+            BROOKESIA_LOGE("Failed to set timer binding values");
+        } else if (fake_counter_ == 1) {
+            BROOKESIA_LOGI("First successful refresh of tiles");
+        }
+    }
     return {};
 }
 
