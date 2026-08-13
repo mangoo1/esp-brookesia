@@ -1,2 +1,3 @@
 littlefs/apps/*
 littlefs/system/*
+littlefs/ess_config.json

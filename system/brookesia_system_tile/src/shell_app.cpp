@@ -1,4 +1,5 @@
 #include "shell_app.hpp"
+#include "turso_ess_data_source.hpp"
 #include "brookesia/system_core/app/context.hpp"
 #include "brookesia/lib_utils.hpp"
 #include "brookesia/system_core/app/gui_runtime.hpp"
@@ -47,7 +48,15 @@ core::AppGuiDescriptor TileShellApp::get_gui_descriptor() const {
 std::expected<void, std::string> TileShellApp::on_start(core::AppContext &context) {
     BROOKESIA_LOGI("TileShellApp starting...");
     context_ = &context;
-    ess_data_source_ = std::make_unique<StubEssDataSource>();
+    
+    auto turso_src = std::make_unique<TursoEssDataSource>(context);
+    if (turso_src->is_active()) {
+        ess_data_source_ = std::move(turso_src);
+        BROOKESIA_LOGI("Using TursoEssDataSource");
+    } else {
+        ess_data_source_ = std::make_unique<StubEssDataSource>();
+        BROOKESIA_LOGI("Using StubEssDataSource fallback");
+    }
 
     styles_ = {
         // Preset 1: Vibrant Space (Purple to dark blue gradient, solid dark tiles)
