@@ -73,6 +73,24 @@ std::expected<void, std::string> TileSystem::on_start()
     bind_background_service(service::helper::Wifi::get_name().data(), wifi_binding_);
     bind_background_service(service::helper::SNTP::get_name().data(), sntp_binding_);
 
+    /* Binding only starts the service; it loads its stored credentials but does
+     * not dial. Requesting Connect makes the state machine prepend Init and
+     * Start, which is what brings the esp_hosted link up. */
+    if (wifi_binding_.is_valid()) {
+        using WifiHelper = service::helper::Wifi;
+        if (!WifiHelper::call_function_async(
+                    WifiHelper::FunctionId::TriggerGeneralAction,
+                    BROOKESIA_DESCRIBE_TO_STR(WifiHelper::GeneralAction::Connect),
+                    [](service::FunctionResult && result) {
+                        if (!result.success) {
+                            BROOKESIA_LOGW("Wi-Fi connect request failed: %s", result.error_message.c_str());
+                        }
+                    }
+                )) {
+            BROOKESIA_LOGW("Failed to submit Wi-Fi connect request");
+        }
+    }
+
     if (shell_app_id_ != core::INVALID_APP_ID) {
         auto result = start_app(shell_app_id_);
         if (!result) {

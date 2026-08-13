@@ -17,7 +17,7 @@ static long long parse_iso8601(const std::string& ts) {
     if (sscanf(ts.c_str(), "%d-%d-%dT%d:%d:%fZ", &y, &M, &d, &h, &m, &s) == 6) {
         if (M < 3) { y--; M += 12; }
         long long days = 365LL * y + y / 4 - y / 100 + y / 400 + (153LL * M - 457) / 5 + d - 306;
-        long long epoch = (days - 719162) * 86400LL + h * 3600LL + m * 60LL + static_cast<int>(s);
+        long long epoch = (days - 719163) * 86400LL + h * 3600LL + m * 60LL + static_cast<int>(s);
         return epoch;
     }
     return 0;
@@ -165,7 +165,7 @@ bool TursoEssDataSource::do_fetch() {
     boost::json::object execute_req;
     execute_req["type"] = "execute";
     boost::json::object stmt;
-    stmt["sql"] = "SELECT ts,soc,batt_power,home_load,pv_power,grid_power,buy_price,feedin_price,demand_window,mode,mode_reason,alert FROM energy_log ORDER BY ts DESC LIMIT 1";
+    stmt["sql"] = "SELECT ts,soc,batt_power,home_load,pv_power,grid_power,buy_price,feedin_price,demand_window,mode,mode_reason FROM energy_log ORDER BY ts DESC LIMIT 1";
     execute_req["stmt"] = stmt;
     requests.push_back(execute_req);
     boost::json::object close_req;
@@ -220,7 +220,10 @@ bool TursoEssDataSource::do_fetch() {
     
     auto res0 = results[0].as_object();
     if (!res0.contains("type") || res0.at("type").as_string() != "ok") {
-        BROOKESIA_LOGE("Turso query error response");
+        BROOKESIA_LOGE(
+            "Turso query error response: %s",
+            boost::json::serialize(results.at(0)).c_str()
+        );
         return false;
     }
     
@@ -233,7 +236,14 @@ bool TursoEssDataSource::do_fetch() {
     if (rows.empty() || !rows[0].is_array()) return true; 
     
     auto row = rows[0].as_array();
-    if (row.size() < 12) return false;
+    constexpr size_t kExpectedColumns = 11;
+    if (row.size() < kExpectedColumns) {
+        BROOKESIA_LOGE(
+            "Turso row has %d columns, expected %d; query and parser disagree",
+            (int)row.size(), (int)kExpectedColumns
+        );
+        return false;
+    }
     
     auto get_float = [](const boost::json::value& v) -> float {
         if (!v.is_object()) return 0.0f;
@@ -298,7 +308,8 @@ bool TursoEssDataSource::do_fetch() {
     data.demand_window = get_int(row[8]);
     data.mode = get_int(row[9]);
     data.mode_reason = get_string(row[10]);
-    data.alert = get_string(row[11]);
+    /* energy_log has no alert column online despite init-db.js declaring one. */
+    data.alert.clear();
     data.is_valid = true;
     
     long long ts_sec = parse_iso8601(data.ts);
