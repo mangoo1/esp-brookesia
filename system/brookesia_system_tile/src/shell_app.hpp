@@ -2,22 +2,32 @@
 
 #include "brookesia/system_core/app/iapp.hpp"
 #include "brookesia/system_core/app/context.hpp"
+#include "ess_data.hpp"
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace esp_brookesia::system::tile {
 
-struct InfoTile {
-    std::string id;
-    std::string title;
-    std::string color;
-    std::string initial_value;
-};
-
-struct AppTile {
-    std::string id;
-    std::string title;
-    std::string color;
+struct StylePreset {
+    std::string name;
+    std::string root_bg_color;
+    std::string root_gradient_color;
+    std::string root_gradient_dir;
+    std::string root_gradient_opacity;
+    std::string header_text_color;
+    
+    std::string tile_bg_color;
+    std::string tile_radius;
+    std::string tile_border_color;
+    std::string tile_border_width;
+    std::string tile_shadow_color;
+    std::string tile_shadow_width;
+    
+    std::string title_color;
+    std::string value_color;
+    std::string sub_color;
+    std::string freshness_color;
 };
 
 class TileShellApp : public core::IApp {
@@ -30,28 +40,25 @@ public:
     std::expected<void, std::string> on_timer(core::AppContext &context, core::TimerId timer_id, std::string_view name) override;
 
 private:
+    void apply_style(const StylePreset& style);
+    void update_tiles(const EssData& data);
+
     core::AppContext *context_ = nullptr;
     core::TimerId timer_id_ = core::INVALID_TIMER_ID;
 
-    std::vector<InfoTile> info_tiles_ = {
-        {"info_energy", "Energy", "#364354", "0 kW"},
-        {"info_weather", "Weather", "#1290d8", "20 °C"},
-        {"info_news", "News", "#5a2f2d", "Latest"},
-        {"info_stocks", "Stocks", "#263d31", "+1.2%"}
+    std::unique_ptr<IEssDataSource> ess_data_source_;
+    int current_style_idx_ = 0;
+    
+    std::vector<StylePreset> styles_;
+    
+    std::vector<std::string> tile_ids_ = {
+        "tile_battery",
+        "tile_solar",
+        "tile_home",
+        "tile_grid",
+        "tile_price",
+        "tile_demand"
     };
-
-    std::vector<AppTile> app_tiles_ = {
-        {"app_camera", "Camera", "#4c494b"},
-        {"app_settings", "Settings", "#38393a"},
-        {"app_music", "Music", "#E8362D"},
-        {"app_gallery", "Gallery", "#f4b22c"},
-        {"app_files", "Files", "#4dc6fd"},
-        {"app_calc", "Calculator", "#1290d8"},
-        {"app_clock", "Clock", "#5fd28a"},
-        {"app_calendar", "Calendar", "#fdc800"}
-    };
-
-    int fake_counter_ = 0;
 };
 
 } // namespace esp_brookesia::system::tile

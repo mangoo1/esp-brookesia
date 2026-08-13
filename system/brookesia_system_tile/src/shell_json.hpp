@@ -1,4 +1,7 @@
-static const char* TILE_SHELL_JSON = R"({
+#pragma once
+
+static const char* TILE_SHELL_JSON = R"(
+{
     "version": "0.1.0",
     "assets": [
         {
@@ -11,16 +14,25 @@ static const char* TILE_SHELL_JSON = R"({
         },
         {
             "type": "viewTemplate",
-            "id": "info_tile_template",
+            "id": "ess_tile_template",
             "node": {
                 "type": "container",
                 "bindings": {
-                    "style.bgColor": "bgColor"
+                    "style.bgColor": "bgColor",
+                    "style.borderColor": "borderColor",
+                    "style.borderWidth": "borderWidth",
+                    "style.shadowColor": "shadowColor",
+                    "style.shadowWidth": "shadowWidth",
+                    "style.radius": "radius"
                 },
                 "style": {
                     "bgColor": "#333333",
                     "radius": "24dp",
-                    "padding": "24dp"
+                    "padding": "24dp",
+                    "borderColor": "#000000",
+                    "borderWidth": "0dp",
+                    "shadowColor": "#000000",
+                    "shadowWidth": "0dp"
                 },
                 "layout": {
                     "type": "flex",
@@ -38,7 +50,8 @@ static const char* TILE_SHELL_JSON = R"({
                         "type": "label",
                         "id": "title_label",
                         "bindings": {
-                            "labelProps.text": "title"
+                            "labelProps.text": "title",
+                            "style.textColor": "titleColor"
                         },
                         "labelProps": {
                             "text": "Title"
@@ -55,7 +68,8 @@ static const char* TILE_SHELL_JSON = R"({
                         "type": "label",
                         "id": "value_label",
                         "bindings": {
-                            "labelProps.text": "value"
+                            "labelProps.text": "value",
+                            "style.textColor": "valueColor"
                         },
                         "labelProps": {
                             "text": "--"
@@ -67,46 +81,19 @@ static const char* TILE_SHELL_JSON = R"({
                         "placement": {
                             "mode": "flow"
                         }
-                    }
-                ]
-            }
-        },
-        {
-            "type": "viewTemplate",
-            "id": "app_tile_template",
-            "node": {
-                "type": "container",
-                "bindings": {
-                    "style.bgColor": "bgColor"
-                },
-                "style": {
-                    "bgColor": "#555555",
-                    "radius": "16dp",
-                    "padding": "16dp"
-                },
-                "layout": {
-                    "type": "flex",
-                    "flexFlow": "column",
-                    "mainAlign": "center",
-                    "crossAlign": "center"
-                },
-                "placement": {
-                    "mode": "flow",
-                    "width": "160dp",
-                    "height": "160dp"
-                },
-                "children": [
+                    },
                     {
                         "type": "label",
-                        "id": "app_title_label",
+                        "id": "sub_label",
                         "bindings": {
-                            "labelProps.text": "title"
+                            "labelProps.text": "subValue",
+                            "style.textColor": "subValueColor"
                         },
                         "labelProps": {
-                            "text": "App"
+                            "text": ""
                         },
                         "style": {
-                            "textColor": "#ffffff",
+                            "textColor": "#aaaaaa",
                             "fontSize": "16sp"
                         },
                         "placement": {
@@ -124,6 +111,12 @@ static const char* TILE_SHELL_JSON = R"({
                 {
                     "type": "container",
                     "id": "root_container",
+                    "bindings": {
+                        "style.bgColor": "rootBgColor",
+                        "style.bgGradientColor": "rootBgGradientColor",
+                        "style.bgGradientDirection": "rootBgGradientDir",
+                        "style.bgGradientOpacity": "rootBgGradientOpacity"
+                    },
                     "style": {
                         "bgColor": "#000000",
                         "padding": "32dp"
@@ -143,7 +136,60 @@ static const char* TILE_SHELL_JSON = R"({
                     "children": [
                         {
                             "type": "container",
-                            "id": "info_zone",
+                            "id": "header_zone",
+                            "layout": {
+                                "type": "flex",
+                                "flexFlow": "row",
+                                "mainAlign": "spaceBetween",
+                                "crossAlign": "center"
+                            },
+                            "placement": {
+                                "mode": "flow",
+                                "width": "match",
+                                "height": "wrap"
+                            },
+                            "children": [
+                                {
+                                    "type": "label",
+                                    "id": "mode_reason_label",
+                                    "bindings": {
+                                        "labelProps.text": "modeReason",
+                                        "style.textColor": "headerTextColor"
+                                    },
+                                    "labelProps": {
+                                        "text": "Mode: Normal"
+                                    },
+                                    "style": {
+                                        "textColor": "#ffffff",
+                                        "fontSize": "24sp"
+                                    },
+                                    "placement": {
+                                        "mode": "flow"
+                                    }
+                                },
+                                {
+                                    "type": "label",
+                                    "id": "freshness_label",
+                                    "bindings": {
+                                        "labelProps.text": "freshness",
+                                        "style.textColor": "freshnessColor"
+                                    },
+                                    "labelProps": {
+                                        "text": "Updated just now"
+                                    },
+                                    "style": {
+                                        "textColor": "#888888",
+                                        "fontSize": "16sp"
+                                    },
+                                    "placement": {
+                                        "mode": "flow"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "container",
+                            "id": "tiles_zone",
                             "layout": {
                                 "type": "grid",
                                 "gridTemplateColumns": [
@@ -152,29 +198,10 @@ static const char* TILE_SHELL_JSON = R"({
                                 ],
                                 "gridTemplateRows": [
                                     "match",
+                                    "match",
                                     "match"
                                 ],
                                 "gap": "24dp"
-                            },
-                            "placement": {
-                                "mode": "flow",
-                                "width": "match",
-                                "height": "480dp"
-                            },
-                            "children": []
-                        },
-                        {
-                            "type": "container",
-                            "id": "apps_zone",
-                            "commonProps": {
-                                "scrollable": true
-                            },
-                            "layout": {
-                                "type": "flex",
-                                "flexFlow": "rowWrap",
-                                "gap": "24dp",
-                                "mainAlign": "start",
-                                "crossAlign": "start"
                             },
                             "placement": {
                                 "mode": "flow",
@@ -188,4 +215,5 @@ static const char* TILE_SHELL_JSON = R"({
             ]
         }
     ]
-})";
+}
+)";

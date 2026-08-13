@@ -1207,6 +1207,56 @@ IEssDataSource (接口)
 
 ---
 
+## 附：主题系统调查（2026-08，**方案 A 可行，待实施**）
+
+用户选定视觉风格 **Vibrant Space**（已固定为默认），并希望风格可选。
+调查结论：**应复用框架主题系统，而非自建一套并行机制。**
+
+### 关键事实（已查证）
+
+| 事实 | 证据 |
+| --- | --- |
+| `theme_id` 是**自由字符串**，非枚举 | `gui_interface/document.hpp:31`（`std::string theme_id = "default"`） |
+| Settings 里的 `"light"`/`"dark"` 只是该 app 自己的常量 | `app_settings/src/settings_app.cpp:142-143` |
+| **支持热重应用** | `runtime.hpp:77` `set_theme(theme_id, reapply_loaded_documents)` |
+| **框架已持久化主题选择** | `system.hpp:412` `get_stored_gui_theme_id()` |
+| 主题可**内联**声明 | 资产条目可为对象（T1 已证实）；parser 有 "inline theme asset" 分支 |
+
+**因此不存在「只支持明暗两种」的限制**，可自由增加命名主题。
+
+### 主题文件结构
+
+```json
+{ "type": "theme", "id": "dark",
+  "assets": ["color/dark.json", "font/default.json", "size/default.json", "style/default.json"],
+  "variants": [ {"when": "${expr(${env.widthDp} < ${env.heightDp})}", "assets": [...]}, ... ] }
+```
+
+组成部分：
+- **颜色资产**：`{"type":"constant","data":{"colors":{...}}}` → 供 `${color.*}` 引用
+- **样式资产**：`{"type":"constant","data":{"styles":{"all":{...},"label":{...}}}}` → 供 `styleRefs` 引用，
+  内部再引用 `${color.*}` / `${constant.*}`
+- `variants` 按 `env.widthDp`/`heightDp` 做响应式（框架自带竖屏判断表达式）
+
+**换主题 = 换调色板**，所有用 `${color.*}` 和 `styleRefs` 的节点自动跟随。
+
+### 与现状的差距
+
+当前 tile shell 把十六进制**硬编码在 C++ 预设里**，经绑定推送。
+改造方向：磁贴改用 `styleRefs` / `${color.*}`，四套风格改写为四个主题。
+
+**收益**：持久化与热切换由框架提供，无需自建；将来新增风格只是加一个主题资产。
+
+### 加载方式
+
+`SystemGuiAccess::load_theme_file(resource_dir, relative_path)`（`gui_access.cpp:648`），
+super 在 `prepare_shell_themes()` 中加载 `light.json` / `dark.json`（`system_lifecycle.cpp:173-185`）。
+我们的自建 System 不加载 super 资源，**需自行加载或内联声明主题**。
+
+**状态**：用户决定先做 ESS 数据接入，主题改造延后。
+
+---
+
 ## 3. 工作量汇总
 
 | 阶段 | 工作量 | 风险 |

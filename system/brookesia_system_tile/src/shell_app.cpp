@@ -1,17 +1,16 @@
 #include "shell_app.hpp"
 #include "brookesia/system_core/app/context.hpp"
 #include "brookesia/lib_utils.hpp"
-#include "brookesia/runtime_manager.hpp"
 #include "brookesia/system_core/app/gui_runtime.hpp"
 #include "brookesia/system_core/app/timer_runtime.hpp"
 #include "shell_json.hpp"
-#include <string>
-#include <vector>
+#include "esp_timer.h"
+#include <charconv>
+#include <cmath>
 
 namespace esp_brookesia::system::tile {
 
-core::AppManifest TileShellApp::get_manifest() const
-{
+core::AppManifest TileShellApp::get_manifest() const {
     return {
         .id = "tile_shell",
         .name = "Tile Shell",
@@ -31,8 +30,7 @@ core::AppManifest TileShellApp::get_manifest() const
     };
 }
 
-core::AppGuiDescriptor TileShellApp::get_gui_descriptor() const
-{
+core::AppGuiDescriptor TileShellApp::get_gui_descriptor() const {
     return {
         .root_kind = core::GuiRootKind::JsonString,
         .root = TILE_SHELL_JSON,
@@ -46,69 +44,68 @@ core::AppGuiDescriptor TileShellApp::get_gui_descriptor() const
     };
 }
 
-std::expected<void, std::string> TileShellApp::on_start(core::AppContext &context)
-{
+std::expected<void, std::string> TileShellApp::on_start(core::AppContext &context) {
     BROOKESIA_LOGI("TileShellApp starting...");
     context_ = &context;
+    ess_data_source_ = std::make_unique<StubEssDataSource>();
+
+    styles_ = {
+        // Preset 1: Vibrant Space (Purple to dark blue gradient, solid dark tiles)
+        {
+            "Vibrant Space",
+            "#0b0c10", "#2c1b3d", "vertical", "255", "#ffffff",
+            "#1f2026", "24dp", "#000000", "0dp", "#000000", "0dp",
+            "#a8b0c3", "#ffffff", "#888df2", "#a8b0c3"
+        },
+        // Preset 2: Frosted Glass (Gradient background, translucent tiles with thin bright borders)
+        {
+            "Frosted Glass",
+            "#111827", "#1e3a8a", "vertical", "200", "#e5e7eb",
+            "#243044", "32dp", "#8fa3c4", "1dp", "#000000", "16dp",
+            "#9ca3af", "#f3f4f6", "#60a5fa", "#9ca3af"
+        },
+        // Preset 3: High Contrast Neobrutilism (Black background, bright solid tiles, thick borders)
+        {
+            "High Contrast",
+            "#000000", "#000000", "vertical", "0", "#ffffff",
+            "#ffff00", "0dp", "#ffffff", "4dp", "#ffffff", "8dp",
+            "#000000", "#000000", "#333333", "#ffffff"
+        },
+        // Preset 4: Soft Minimalist (Light theme, soft shadows, rounded)
+        {
+            "Soft Minimalist",
+            "#f3f4f6", "#f3f4f6", "vertical", "0", "#111827",
+            "#ffffff", "16dp", "#e5e7eb", "1dp", "#000000", "24dp",
+            "#6b7280", "#111827", "#3b82f6", "#6b7280"
+        }
+    };
 
     std::vector<gui::BindingValueUpdate> binding_updates;
 
-    // Create info tiles
-    for (const auto& tile : info_tiles_) {
+    for (const auto& tile_id : tile_ids_) {
         auto create_result = context.gui().create_view(
-            "info_tile_template",
-            "tile_home/root_container/info_zone",
-            tile.id
+            "ess_tile_template",
+            "tile_home/root_container/tiles_zone",
+            tile_id
         );
         if (!create_result) {
-            BROOKESIA_LOGE("Failed to create info tile %s: %s", tile.id.c_str(), create_result.error().c_str());
-            continue;
-        }
-        
-        std::string instance_path = "tile_home/root_container/info_zone/" + tile.id;
-        binding_updates.push_back({instance_path, "bgColor", tile.color});
-        binding_updates.push_back({instance_path + "/title_label", "title", tile.title});
-        binding_updates.push_back({instance_path + "/value_label", "value", tile.initial_value});
-    }
-
-    // Create app tiles
-    for (const auto& tile : app_tiles_) {
-        auto create_result = context.gui().create_view(
-            "app_tile_template",
-            "tile_home/root_container/apps_zone",
-            tile.id
-        );
-        if (!create_result) {
-            BROOKESIA_LOGE("Failed to create app tile %s: %s", tile.id.c_str(), create_result.error().c_str());
-            continue;
-        }
-
-        std::string instance_path = "tile_home/root_container/apps_zone/" + tile.id;
-        binding_updates.push_back({instance_path, "bgColor", tile.color});
-        binding_updates.push_back({instance_path + "/app_title_label", "title", tile.title});
-    }
-
-    if (!binding_updates.empty()) {
-        auto update_result = context.gui().set_binding_values(binding_updates);
-        if (!update_result) {
-            BROOKESIA_LOGE("Failed to set initial binding values");
+            BROOKESIA_LOGE("Failed to create tile %s: %s", tile_id.c_str(), create_result.error().c_str());
         }
     }
+
+    apply_style(styles_[current_style_idx_]);
 
     auto timer_result = context.timer().start_periodic("tile_refresh", 1000);
     if (timer_result) {
         timer_id_ = *timer_result;
         BROOKESIA_LOGI("Timer started successfully with ID: %llu", (unsigned long long)timer_id_);
-    } else {
-        BROOKESIA_LOGE("Failed to start timer: %s", timer_result.error().c_str());
     }
 
     BROOKESIA_LOGI("TileShellApp started successfully");
     return {};
 }
 
-std::expected<void, std::string> TileShellApp::on_stop(core::AppContext &context)
-{
+std::expected<void, std::string> TileShellApp::on_stop(core::AppContext &context) {
     if (timer_id_ != core::INVALID_TIMER_ID) {
         context.timer().stop(timer_id_);
         timer_id_ = core::INVALID_TIMER_ID;
@@ -117,43 +114,112 @@ std::expected<void, std::string> TileShellApp::on_stop(core::AppContext &context
     return {};
 }
 
-std::expected<void, std::string> TileShellApp::on_timer(core::AppContext &context, core::TimerId timer_id, std::string_view name)
-{
+void TileShellApp::apply_style(const StylePreset& style) {
+    BROOKESIA_LOGI("Applying style preset: %s", style.name.c_str());
+    std::vector<gui::BindingValueUpdate> bu;
+    
+    bu.push_back({"tile_home/root_container", "rootBgColor", style.root_bg_color});
+    bu.push_back({"tile_home/root_container", "rootBgGradientColor", style.root_gradient_color});
+    bu.push_back({"tile_home/root_container", "rootBgGradientDir", style.root_gradient_dir});
+    bu.push_back({"tile_home/root_container", "rootBgGradientOpacity", style.root_gradient_opacity});
+    
+    bu.push_back({"tile_home/root_container/header_zone/mode_reason_label", "headerTextColor", style.header_text_color});
+    bu.push_back({"tile_home/root_container/header_zone/freshness_label", "freshnessColor", style.freshness_color});
+
+    for (const auto& tile_id : tile_ids_) {
+        std::string p = "tile_home/root_container/tiles_zone/" + tile_id;
+        bu.push_back({p, "bgColor", style.tile_bg_color});
+        bu.push_back({p, "radius", style.tile_radius});
+        bu.push_back({p, "borderColor", style.tile_border_color});
+        bu.push_back({p, "borderWidth", style.tile_border_width});
+        bu.push_back({p, "shadowColor", style.tile_shadow_color});
+        bu.push_back({p, "shadowWidth", style.tile_shadow_width});
+        
+        bu.push_back({p + "/title_label", "titleColor", style.title_color});
+        bu.push_back({p + "/value_label", "valueColor", style.value_color});
+        bu.push_back({p + "/sub_label", "subValueColor", style.sub_color});
+    }
+
+    context_->gui().set_binding_values(bu);
+}
+
+void TileShellApp::update_tiles(const EssData& data) {
+    std::vector<gui::BindingValueUpdate> bu;
+    
+    long long now = esp_timer_get_time() / 1000;
+    long long age_ms = now - data.last_updated;
+    long long age_sec = age_ms / 1000;
+    
+    std::string freshness_text;
+    std::string freshness_color = styles_[current_style_idx_].freshness_color;
+    
+    if (age_sec > 300) {
+        freshness_text = "STALE DATA (" + std::to_string(age_sec / 60) + "m old)";
+        freshness_color = "#ff4444"; // Visually obvious stale warning
+    } else {
+        freshness_text = "Updated " + std::to_string(age_sec) + "s ago";
+    }
+    
+    bu.push_back({"tile_home/root_container/header_zone/freshness_label", "freshness", freshness_text});
+    bu.push_back({"tile_home/root_container/header_zone/freshness_label", "freshnessColor", freshness_color});
+    
+    std::string mode_text = data.mode_reason;
+    if (data.alert != "") {
+        mode_text = "ALERT: " + data.alert;
+    }
+    bu.push_back({"tile_home/root_container/header_zone/mode_reason_label", "modeReason", mode_text});
+    if (data.alert != "") {
+        bu.push_back({"tile_home/root_container/header_zone/mode_reason_label", "headerTextColor", "#ff4444"});
+    } else {
+        bu.push_back({"tile_home/root_container/header_zone/mode_reason_label", "headerTextColor", styles_[current_style_idx_].header_text_color});
+    }
+
+    auto f2s = [](float val) {
+        char buf[32];
+        auto [ptr, ec] = std::to_chars(buf, buf + sizeof(buf), val, std::chars_format::fixed, 2);
+        return std::string(buf, ptr);
+    };
+
+    auto set_tile = [&](const std::string& id, const std::string& title, const std::string& val, const std::string& sub) {
+        std::string p = "tile_home/root_container/tiles_zone/" + id;
+        bu.push_back({p + "/title_label", "title", title});
+        bu.push_back({p + "/value_label", "value", val});
+        bu.push_back({p + "/sub_label", "subValue", sub});
+    };
+    
+    // Battery
+    std::string batt_sub = (data.batt_power > 0) ? "Charging " + f2s(data.batt_power) + " kW" 
+                         : ((data.batt_power < 0) ? "Discharging " + f2s(-data.batt_power) + " kW" : "Idle");
+    set_tile("tile_battery", "Battery", f2s(data.soc) + " %", batt_sub);
+    
+    // Solar
+    set_tile("tile_solar", "Solar PV", f2s(data.pv_power) + " kW", "Generating");
+    
+    // Home Load
+    set_tile("tile_home", "Home Load", f2s(data.home_load) + " kW", "Consuming");
+    
+    // Grid
+    std::string grid_val = f2s(std::abs(data.grid_power)) + " kW";
+    std::string grid_sub = (data.grid_power < 0) ? "IMPORTING" : "EXPORTING";
+    set_tile("tile_grid", "Grid", grid_val, grid_sub);
+    
+    // Price
+    set_tile("tile_price", "Pricing", f2s(data.buy_price) + " c/kWh", "Feed-in: " + f2s(data.feedin_price) + " c/kWh");
+    
+    // Demand Window
+    std::string demand_val = (data.demand_window == 1) ? "ACTIVE" : "INACTIVE";
+    std::string demand_sub = "15:00 - 20:00 Peak";
+    set_tile("tile_demand", "Demand Window", demand_val, demand_sub);
+    
+    context_->gui().set_binding_values(bu);
+}
+
+std::expected<void, std::string> TileShellApp::on_timer(core::AppContext &context, core::TimerId timer_id, std::string_view name) {
     if (timer_id != timer_id_) return {};
 
-    fake_counter_++;
-    
-    std::vector<gui::BindingValueUpdate> binding_updates;
-    
-    // Refresh info tiles with fake data
-    for (auto& tile : info_tiles_) {
-        std::string instance_path = "tile_home/root_container/info_zone/" + tile.id;
-        std::string new_value;
-        
-        if (tile.id == "info_energy") {
-            new_value = std::to_string(fake_counter_ * 2) + " kW";
-        } else if (tile.id == "info_weather") {
-            new_value = std::to_string(20 + (fake_counter_ % 5)) + " °C";
-        } else if (tile.id == "info_news") {
-            new_value = "News " + std::to_string(fake_counter_);
-        } else if (tile.id == "info_stocks") {
-            new_value = (fake_counter_ % 2 == 0 ? "+" : "-") + std::to_string(1 + (fake_counter_ % 3)) + ".0%";
-        } else {
-            new_value = std::to_string(fake_counter_);
-        }
-        
-        tile.initial_value = new_value;
-        binding_updates.push_back({instance_path + "/value_label", "value", new_value});
-    }
+    EssData data = ess_data_source_->get_latest();
+    update_tiles(data);
 
-    if (!binding_updates.empty()) {
-        auto update_result = context.gui().set_binding_values(binding_updates);
-        if (!update_result) {
-            BROOKESIA_LOGE("Failed to set timer binding values");
-        } else if (fake_counter_ == 1) {
-            BROOKESIA_LOGI("First successful refresh of tiles");
-        }
-    }
     return {};
 }
 
