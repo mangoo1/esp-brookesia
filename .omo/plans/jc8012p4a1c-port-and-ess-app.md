@@ -1257,6 +1257,43 @@ super 在 `prepare_shell_themes()` 中加载 `light.json` / `dark.json`（`syste
 
 ---
 
+## 第九部分：磁贴点击不通（2026-08，**未解决，已搁置**）
+
+Launcher 的核心交互是点磁贴，但在自建 System 中**点击事件从未送达 app**：
+无回调日志、无 GUI 警告、无解析错误，界面与数据一切正常。
+
+### 已排除（均经实测或代码核对）
+
+| 假设 | 结论 | 依据 |
+| --- | --- | --- |
+| 触摸链路有问题 | **排除** | 启动日志与 super 逐行一致：`Registered display touch Touch0 ... operation_mode=Interrupt`、`Bound display output Output0 to touch Touch0`、`LVGL Display source created 5 pointer input(s)`、`Display touch gesture enabled` |
+| 元素类型不可点 | 排除 | `container` 改为 `button`（`menu_item` 模板根即 `button`），无变化 |
+| 事件格式错误 | 排除 | 原写 `{"type":"clicked","action":"x"}` 系臆想；改为 super 真实格式 `effects` + `emitAction`，无变化 |
+| 订阅方式错误 | 排除 | 由无回调的 `subscribe_action(action)` 改为带回调重载并持有 `ScopedConnection`（照 `system_super/src/shell_app.cpp:837-852`），`connected()` 为 true，无变化 |
+| 订阅时机错误 | 排除 | 与 super 一致：先 `create_view` 后 `subscribe_action` |
+| 祖先容器可滚动导致 PressLost | **排除** | Oracle 指出容器默认可滚动（`parser.cpp:3878`），`emitAction` 在 `require_valid_press && press_lost_since_pressed` 时静默 `continue`（`runtime.cpp:6311`），而 super 显式关滚动（`app_launcher.json:4,87`）。给四个祖先加 `scrollable:false` 后**仍不触发** |
+| 按压有效性判定 | **排除** | 去掉 `requireValidPress` 并加 `pressed` 事件做对照，**`pressed` 同样不触发** → 事件根本没产生，与 clicked 语义无关 |
+| 实例化不绑事件 | 排除 | `create_view` 内确有 `backend->bind_events(handle, stored_record->node.events)`（`runtime.cpp` 约 4855 行附近） |
+| 模板结构不同 | 排除 | 与 super 逐项比对：顶层键 `[type,id,node]`、`node.type=button`、events 格式，**完全一致** |
+
+### Oracle 已澄清的机制（有价值，避免重复调研）
+
+- `AppGuiRuntime::subscribe_action(action, handler)` 直连 `System::gui_subscribe_action`
+  （`system_core/src/app/app.cpp:342` → `gui.cpp:1047`），**绕过** `make_app_action_forwarder`/`on_action` 那条路
+- 屏幕流在 native `on_start` 之前已自动挂载（`manager.cpp:645`），`create_view` 与订阅都在其后
+- **`GuiRootKind::JsonString` 不是差异点**：经 `gui_runtime_->load_json`（`gui.cpp:513`）加载后，
+  与文件型文档走同一套 document/action 信号路径
+
+### 下一步（若日后继续）
+
+逐项排除已到尽头，应改为**取运行时真相**而非继续推断：在 `gui_lvgl` 后端的
+`bind_events` 与 LVGL 命中测试处加临时日志，一次烧录即可看出事件断在哪一层
+（实例化时是否真的绑上、触摸时命中了哪个对象）。代价是需临时改动 `gui/` 目录并还原。
+
+**当前决定：搁置。** 面板主要价值（显示真实 ESS 数据）已实现，点击属锦上添花。
+
+---
+
 ## 3. 工作量汇总
 
 | 阶段 | 工作量 | 风险 |
