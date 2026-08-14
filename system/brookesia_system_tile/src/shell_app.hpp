@@ -52,12 +52,10 @@ private:
     std::vector<StylePreset> styles_;
     
     std::vector<std::string> tile_ids_ = {
-        "tile_battery",
-        "tile_solar",
+        "tile_soc",
+        "tile_batt",
         "tile_home",
-        "tile_grid",
-        "tile_price",
-        "tile_demand"
+        "tile_grid"
     };
 };
 

@@ -1,7 +1,6 @@
 #pragma once
 
-static const char* TILE_SHELL_JSON = R"(
-{
+static const char* TILE_SHELL_JSON = R"({
     "version": "0.1.0",
     "assets": [
         {
@@ -28,7 +27,7 @@ static const char* TILE_SHELL_JSON = R"(
                 "style": {
                     "bgColor": "#333333",
                     "radius": "24dp",
-                    "padding": "24dp",
+                    "padding": "28dp",
                     "borderColor": "#000000",
                     "borderWidth": "0dp",
                     "shadowColor": "#000000",
@@ -58,7 +57,7 @@ static const char* TILE_SHELL_JSON = R"(
                         },
                         "style": {
                             "textColor": "#ffffff",
-                            "fontSize": "20sp"
+                            "fontSize": "28sp"
                         },
                         "placement": {
                             "mode": "flow"
@@ -76,7 +75,7 @@ static const char* TILE_SHELL_JSON = R"(
                         },
                         "style": {
                             "textColor": "#ffffff",
-                            "fontSize": "36sp"
+                            "fontSize": "56sp"
                         },
                         "placement": {
                             "mode": "flow"
@@ -94,7 +93,7 @@ static const char* TILE_SHELL_JSON = R"(
                         },
                         "style": {
                             "textColor": "#aaaaaa",
-                            "fontSize": "16sp"
+                            "fontSize": "22sp"
                         },
                         "placement": {
                             "mode": "flow"
@@ -119,7 +118,7 @@ static const char* TILE_SHELL_JSON = R"(
                     },
                     "style": {
                         "bgColor": "#000000",
-                        "padding": "32dp"
+                        "padding": "56dp"
                     },
                     "layout": {
                         "type": "flex",
@@ -197,11 +196,10 @@ static const char* TILE_SHELL_JSON = R"(
                                     "match"
                                 ],
                                 "gridTemplateRows": [
-                                    "match",
-                                    "match",
-                                    "match"
+                                    "320dp",
+                                    "320dp"
                                 ],
-                                "gap": "24dp"
+                                "gap": "32dp"
                             },
                             "placement": {
                                 "mode": "flow",
@@ -215,5 +213,4 @@ static const char* TILE_SHELL_JSON = R"(
             ]
         }
     ]
-}
-)";
+})";

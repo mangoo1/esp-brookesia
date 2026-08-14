@@ -196,30 +196,20 @@ void TileShellApp::update_tiles(const EssData& data) {
         bu.push_back({p + "/sub_label", "subValue", sub});
     };
     
-    // Battery
-    std::string batt_sub = (data.batt_power > 0) ? "Charging " + f2s(data.batt_power) + " kW" 
-                         : ((data.batt_power < 0) ? "Discharging " + f2s(-data.batt_power) + " kW" : "Idle");
-    set_tile("tile_battery", "Battery", f2s(data.soc) + " %", batt_sub);
-    
-    // Solar
-    set_tile("tile_solar", "Solar PV", f2s(data.pv_power) + " kW", "Generating");
-    
-    // Home Load
-    set_tile("tile_home", "Home Load", f2s(data.home_load) + " kW", "Consuming");
-    
-    // Grid
-    std::string grid_val = f2s(std::abs(data.grid_power)) + " kW";
-    std::string grid_sub = (data.grid_power < 0) ? "IMPORTING" : "EXPORTING";
-    set_tile("tile_grid", "Grid", grid_val, grid_sub);
-    
-    // Price
-    set_tile("tile_price", "Pricing", f2s(data.buy_price) + " c/kWh", "Feed-in: " + f2s(data.feedin_price) + " c/kWh");
-    
-    // Demand Window
-    std::string demand_val = (data.demand_window == 1) ? "ACTIVE" : "INACTIVE";
-    std::string demand_sub = "15:00 - 20:00 Peak";
-    set_tile("tile_demand", "Demand Window", demand_val, demand_sub);
-    
+    /* Direction is shown as a word rather than a sign: a minus in front of a
+     * kW figure is easy to misread from across the room. */
+    set_tile("tile_soc", "Battery", f2s(data.soc) + " %", "");
+
+    std::string batt_dir = (data.batt_power > 0.01f) ? "Charging"
+                         : ((data.batt_power < -0.01f) ? "Discharging" : "Idle");
+    set_tile("tile_batt", "Battery Power", f2s(std::abs(data.batt_power)) + " kW", batt_dir);
+
+    set_tile("tile_home", "Home Use", f2s(data.home_load) + " kW", "");
+
+    std::string grid_dir = (data.grid_power < -0.01f) ? "Buying"
+                         : ((data.grid_power > 0.01f) ? "Selling" : "Idle");
+    set_tile("tile_grid", "Grid Power", f2s(std::abs(data.grid_power)) + " kW", grid_dir);
+
     context_->gui().set_binding_values(bu);
 }
 
