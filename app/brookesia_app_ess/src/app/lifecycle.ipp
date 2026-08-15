@@ -124,6 +124,7 @@ std::expected<void, std::string> EssApp::on_action(
     system::core::AppContext &context,
     std::string_view action
 ) {
+    BROOKESIA_LOGI("EssApp on_action: %.*s", (int)action.size(), action.data());
     if (action == ACTION_OPEN_HOME || action == ACTION_BACK) {
         context.gui().trigger_screen_flow(CONTENT_FLOW_ID, action);
     } else if (action == ACTION_OPEN_DETAIL_BATT_PCT ||

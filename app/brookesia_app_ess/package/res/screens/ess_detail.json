@@ -12,7 +12,7 @@
             "type": "container",
             "id": "page",
             "commonProps": {
-                "scrollable": true
+                "scrollable": false
             },
             "layout": {
                 "type": "flex",
@@ -21,10 +21,10 @@
             },
             "placement": {
                 "mode": "absolute",
-                "x": "200dp",
-                "y": "320dp",
-                "width": "400dp",
-                "height": "640dp"
+                "x": "100dp",
+                "y": "${expr((${env.heightDp} - 560dp) / 2)}",
+                "width": "600dp",
+                "height": "560dp"
             },
             "children": [
                 {
@@ -46,6 +46,9 @@
                         {
                             "type": "button",
                             "id": "back",
+                            "interactionRefs": [
+                                "press.item"
+                            ],
                             "events": [
                                 {
                                     "type": "clicked",

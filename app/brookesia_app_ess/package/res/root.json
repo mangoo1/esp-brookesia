@@ -4,6 +4,7 @@
         "constants/default.json",
         "images/index.json",
         "i18n/en.json",
+        "templates/press_item.json",
         "screens/ess_home.json",
         "screens/ess_detail.json",
         "flows/ess_main.json"
