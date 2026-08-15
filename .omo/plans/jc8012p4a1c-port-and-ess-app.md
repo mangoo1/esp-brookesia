@@ -1294,6 +1294,61 @@ Launcher 的核心交互是点磁贴，但在自建 System 中**点击事件从�
 
 ---
 
+## 第十部分：改做普通 App（2026-08，**方向修正**）
+
+### 结论：ESS 面板应是一个 App，不是自建 System
+
+用户澄清真实需求：一个**跑在标准系统里的 App**，屏幕中间约 50% 放 5-6 个 tile
+（ESS/天气/新闻），每个显示简单数值，**点开 tile 看详情**。这是「带点击+详情页的 app」，
+不是替换外壳的 launcher。
+
+早前把它做成自建 System（`brookesia_system_tile`）是方向偏差，代价高昂：
+服务要自己绑、Wi-Fi 要自己拨号、字体/语言要自己注册，且**磁贴点击七轮未解**。
+
+### App 形态自动解开两个死结（已用 settings app 核实）
+
+| 自建 System 里卡死 | 普通 App 现成机制 |
+| --- | --- |
+| 点击不通 | settings 用 `{"type":"clicked","action":"..."}`（**非** `effects`/`emitAction`）+ `on_action` + `subscribe_actions`/`make_default_action_subscriptions()`（`app_settings/src/app/lifecycle.ipp:679-681`, `settings_home.json` 事件格式）。**注意：我在自建 System 里用的 `effects`/`emitAction` 是 super launcher 按钮的格式，与普通 app 不同——这很可能就是点击不通的真因** |
+| 详情页导航 | `context.gui().trigger_screen_flow(CONTENT_FLOW_ID, action)` 切屏（`lifecycle.ipp:526`），一个 app 多个 `viewScreen`（settings 有 10 个），返回手势框架自带 |
+
+### 数据层完全可复用（app-vs-system 无关）
+
+以下**只依赖 `AppContext`、不依赖 System**，可原样搬进 app：
+- `ess_data.{cpp,hpp}`（`EssData` + `IEssDataSource` + `StubEssDataSource`）
+- `turso_ess_data_source.{cpp,hpp}`（HTTP 取数、libSQL 解析、配置从 SD/LittleFS、绑 Http 服务）
+
+**App 跑在 super 上，这些 System 专属工作 super 全包办**，app 不必自己做：
+Wi-Fi 连接、SNTP、字体注册、中文语言。
+
+### 中文显示的结论（自建 System 下的坑，记录备查）
+
+自建 System 里让中文显示需要三步，**其中第二步是隐藏坑**：
+1. 注册字体索引：`system_gui().register_font_file(share_dir, "fonts/index.json")`
+   （字体 `NotoSansSC-Regular.subset.ttf` 已由 super 组件打包进 `/littlefs/system/fonts`）
+2. **`set_language("zh_CN")`**：框架启动时从存储恢复 `Language: en`（日志
+   `System GUI preference 'Language: en' is loaded`），**覆盖 `Config::environment.language`**。
+   只改 main.cpp 的 `.language` 无效，必须调 `set_language()` 写回存储
+3. 字体按语言选择（fontSet 里 `default`=Telex仅en、`zh_CN`=NotoSansSC含中文）
+
+**做成 app 后这三步都不需要**——super 已处理字体与语言。app 只需在 i18n 资源里提供中文串。
+
+### 方案：新建 `app/brookesia_app_ess`
+
+骨架照 `app/brookesia_app_camera`（已验证可跑）：CMake/idf_component/provider/manifest/package。
+1. 数据层从 `system_tile` 原样搬
+2. UI 用资源文件 `package/res/screens/*.json`（app 标准做法，支持多屏+i18n）
+3. 首页 5-6 tile 居中占屏约 50%，点击用 settings 的**已验证**事件格式
+4. 每个 tile 一个详情 `viewScreen`，`trigger_screen_flow` 切换
+5. `main.cpp` 切回 `system::super::System`
+
+**最小可跑目标**：首页 + 4 个 ESS tile + 真实数据 + 点一个 tile 进一个详情页。
+跑通后再加天气/新闻/更多 tile。
+
+`brookesia_system_tile` 组件暂时保留（数据层来源），app 稳定后可删。
+
+---
+
 ## 3. 工作量汇总
 
 | 阶段 | 工作量 | 风险 |
