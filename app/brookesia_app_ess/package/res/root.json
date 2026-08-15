@@ -1,0 +1,19 @@
+{
+    "version": "0.1.0",
+    "assets": [
+        "constants/default.json",
+        "images/index.json",
+        "i18n/en.json",
+        "screens/ess_home.json",
+        "screens/ess_detail.json",
+        "flows/ess_main.json"
+    ],
+    "variants": [
+        {
+            "when": "${expr(${env.language} == \"zh_CN\")}",
+            "assets": [
+                "i18n/zh_CN.json"
+            ]
+        }
+    ]
+}

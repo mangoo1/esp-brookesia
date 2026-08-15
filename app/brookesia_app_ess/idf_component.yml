@@ -1,0 +1,22 @@
+version: "0.1.0"
+description: ESP-Brookesia native ESS app.
+dependencies:
+  espressif/brookesia_system_core:
+    version: "0.8.*"
+    override_path: ../../system/brookesia_system_core
+    require: public
+
+  espressif/brookesia_service_helper:
+    version: "0.8.*"
+    override_path: ../../service/framework/brookesia_service_helper
+    require: public
+
+  espressif/brookesia_service_http:
+    version: "0.8.*"
+    override_path: ../../service/network/brookesia_service_http
+    require: public
+
+  espressif/brookesia_service_display:
+    version: "0.8.*"
+    override_path: ../../service/media/brookesia_service_display
+    require: public

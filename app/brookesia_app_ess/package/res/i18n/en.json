@@ -1,0 +1,18 @@
+{
+    "type": "constant",
+    "data": {
+        "ess": {
+            "i18n": {
+                "batt_pct": "Battery",
+                "batt_pwr": "Battery Power",
+                "home_use": "Home Use",
+                "grid_pwr": "Grid Power",
+                "charging": "Charging",
+                "discharging": "Discharging",
+                "buying": "Buying",
+                "selling": "Selling",
+                "idle": "Idle"
+            }
+        }
+    }
+}

@@ -1,0 +1,36 @@
+{
+    "type": "screenFlow",
+    "id": "ess_main",
+    "screens": [
+        "ess_home",
+        "ess_detail"
+    ],
+    "initial": "ess_home",
+    "transitions": [
+        {
+            "from": [],
+            "action": "ess.open.batt_pct",
+            "to": "ess_detail"
+        },
+        {
+            "from": [],
+            "action": "ess.open.batt_pwr",
+            "to": "ess_detail"
+        },
+        {
+            "from": [],
+            "action": "ess.open.home_use",
+            "to": "ess_detail"
+        },
+        {
+            "from": [],
+            "action": "ess.open.grid",
+            "to": "ess_detail"
+        },
+        {
+            "from": [],
+            "action": "ess.back",
+            "to": "ess_home"
+        }
+    ]
+}

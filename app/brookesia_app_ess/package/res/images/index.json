@@ -1,0 +1,11 @@
+{
+    "type": "imageSet",
+    "images": [
+        {
+            "id": "app_icon_ess",
+            "src": "launcher_icon.jpg",
+            "width": 92,
+            "height": 92
+        }
+    ]
+}

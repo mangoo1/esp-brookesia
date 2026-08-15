@@ -1,0 +1,13 @@
+{
+    "type": "constant",
+    "data": {
+        "ess": {
+            "layout": {
+                "pageWidth": "400dp",
+                "pageHeight": "640dp",
+                "pageX": "200dp",
+                "pageY": "320dp"
+            }
+        }
+    }
+}

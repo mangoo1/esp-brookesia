@@ -1,0 +1,148 @@
+{
+    "type": "viewScreen",
+    "id": "ess_detail",
+    "commonProps": {
+        "scrollable": false
+    },
+    "styleRefs": [
+        "app.page"
+    ],
+    "children": [
+        {
+            "type": "container",
+            "id": "page",
+            "commonProps": {
+                "scrollable": true
+            },
+            "layout": {
+                "type": "flex",
+                "flexFlow": "column",
+                "gap": "16dp"
+            },
+            "placement": {
+                "mode": "absolute",
+                "x": "200dp",
+                "y": "320dp",
+                "width": "400dp",
+                "height": "640dp"
+            },
+            "children": [
+                {
+                    "type": "container",
+                    "id": "header",
+                    "layout": {
+                        "type": "flex",
+                        "flexFlow": "row",
+                        "crossAlign": "center",
+                        "mainAlign": "spaceBetween"
+                    },
+                    "placement": {
+                        "mode": "flow",
+                        "width": "match",
+                        "height": "80dp",
+                        "alignSelf": "stretch"
+                    },
+                    "children": [
+                        {
+                            "type": "button",
+                            "id": "back",
+                            "events": [
+                                {
+                                    "type": "clicked",
+                                    "action": "ess.back"
+                                }
+                            ],
+                            "styleRefs": [
+                                "app.listItem"
+                            ],
+                            "style": {
+                                "borderWidth": "0dp",
+                                "padding": "8dp"
+                            },
+                            "placement": {
+                                "mode": "flow",
+                                "width": "wrap",
+                                "height": "match",
+                                "alignSelf": "stretch"
+                            },
+                            "children": [
+                                {
+                                    "type": "label",
+                                    "id": "back_label",
+                                    "styleRefs": [
+                                        "app.listItemTitle"
+                                    ],
+                                    "labelProps": {
+                                        "text": "< Back"
+                                    },
+                                    "placement": {
+                                        "mode": "flow",
+                                        "width": "wrap",
+                                        "alignSelf": "center"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "label",
+                            "id": "title",
+                            "styleRefs": [
+                                "app.listItemTitle"
+                            ],
+                            "labelProps": {
+                                "text": "Detail"
+                            },
+                            "placement": {
+                                "mode": "flow",
+                                "width": "wrap",
+                                "alignSelf": "center"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "container",
+                    "id": "card",
+                    "commonProps": {
+                        "scrollable": false
+                    },
+                    "styleRefs": [
+                        "app.card"
+                    ],
+                    "style": {
+                        "padding": "16dp"
+                    },
+                    "layout": {
+                        "type": "flex",
+                        "flexFlow": "column",
+                        "gap": "12dp",
+                        "crossAlign": "center",
+                        "mainAlign": "center"
+                    },
+                    "placement": {
+                        "mode": "flow",
+                        "width": "match",
+                        "height": "300dp",
+                        "alignSelf": "stretch"
+                    },
+                    "children": [
+                        {
+                            "type": "label",
+                            "id": "content",
+                            "styleRefs": [
+                                "app.listItemTitle"
+                            ],
+                            "labelProps": {
+                                "text": "Detail content goes here."
+                            },
+                            "placement": {
+                                "mode": "flow",
+                                "width": "wrap"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

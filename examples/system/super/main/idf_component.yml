@@ -123,6 +123,11 @@ dependencies:
     override_path: ../../../../app/brookesia_app_files
     require: public
 
+  espressif/brookesia_app_ess:
+    version: "0.1.0"
+    override_path: ../../../../app/brookesia_app_ess
+    require: public
+
   espressif/brookesia_app_camera:
     version: "0.8.*"
     override_path: ../../../../app/brookesia_app_camera

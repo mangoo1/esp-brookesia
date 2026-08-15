@@ -1,0 +1,7 @@
+menu "ESP-Brookesia: ESS App Configurations"
+    config BROOKESIA_APP_ESS_ENABLE_PRELOAD_DOM
+        bool "Preload ESS GUI DOM"
+        default y
+        help
+            Preload and retain the ESS app GUI DOM when the app is installed.
+endmenu

@@ -1,0 +1,18 @@
+{
+    "type": "constant",
+    "data": {
+        "ess": {
+            "i18n": {
+                "batt_pct": "电池电量",
+                "batt_pwr": "电池功率",
+                "home_use": "家庭用电",
+                "grid_pwr": "电网功率",
+                "charging": "充电中",
+                "discharging": "放电中",
+                "buying": "买电中",
+                "selling": "卖电中",
+                "idle": "待机"
+            }
+        }
+    }
+}

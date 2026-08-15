@@ -1,0 +1,351 @@
+{
+    "type": "viewScreen",
+    "id": "ess_home",
+    "commonProps": {
+        "scrollable": false
+    },
+    "styleRefs": [
+        "app.page"
+    ],
+    "children": [
+        {
+            "type": "container",
+            "id": "page",
+            "commonProps": {
+                "scrollable": true
+            },
+            "layout": {
+                "type": "flex",
+                "flexFlow": "column",
+                "gap": "16dp"
+            },
+            "placement": {
+                "mode": "absolute",
+                "x": "200dp",
+                "y": "320dp",
+                "width": "400dp",
+                "height": "640dp"
+            },
+            "children": [
+                {
+                    "type": "container",
+                    "id": "card",
+                    "commonProps": {
+                        "scrollable": false
+                    },
+                    "styleRefs": [
+                        "app.card"
+                    ],
+                    "style": {
+                        "padding": "16dp"
+                    },
+                    "layout": {
+                        "type": "flex",
+                        "flexFlow": "column",
+                        "gap": "12dp"
+                    },
+                    "placement": {
+                        "mode": "flow",
+                        "width": "match",
+                        "height": "wrap",
+                        "alignSelf": "stretch"
+                    },
+                    "children": [
+                        {
+                            "type": "button",
+                            "id": "batt_pct",
+                            "events": [
+                                {
+                                    "type": "clicked",
+                                    "action": "ess.open.batt_pct"
+                                }
+                            ],
+                            "styleRefs": [
+                                "app.listItem"
+                            ],
+                            "style": {
+                                "borderWidth": "0dp",
+                                "padding": "8dp"
+                            },
+                            "layout": {
+                                "type": "flex",
+                                "flexFlow": "row",
+                                "mainAlign": "spaceBetween",
+                                "crossAlign": "center"
+                            },
+                            "placement": {
+                                "mode": "flow",
+                                "width": "match",
+                                "height": "80dp",
+                                "alignSelf": "stretch"
+                            },
+                            "children": [
+                                {
+                                    "type": "label",
+                                    "id": "title",
+                                    "styleRefs": [
+                                        "app.listItemTitle"
+                                    ],
+                                    "labelProps": {
+                                        "text": "${constant.ess.i18n.batt_pct}"
+                                    },
+                                    "placement": {
+                                        "mode": "flow",
+                                        "width": "wrap"
+                                    }
+                                },
+                                {
+                                    "type": "label",
+                                    "id": "value",
+                                    "styleRefs": [
+                                        "app.listItemValue"
+                                    ],
+                                    "labelProps": {
+                                        "text": "-- %"
+                                    },
+                                    "placement": {
+                                        "mode": "flow",
+                                        "width": "wrap"
+                                    }
+                                },
+                                {
+                                    "type": "label",
+                                    "id": "dir",
+                                    "styleRefs": [
+                                        "app.listItemValue"
+                                    ],
+                                    "labelProps": {
+                                        "text": ""
+                                    },
+                                    "placement": {
+                                        "mode": "flow",
+                                        "width": "wrap"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "button",
+                            "id": "batt_pwr",
+                            "events": [
+                                {
+                                    "type": "clicked",
+                                    "action": "ess.open.batt_pwr"
+                                }
+                            ],
+                            "styleRefs": [
+                                "app.listItem"
+                            ],
+                            "style": {
+                                "borderWidth": "0dp",
+                                "padding": "8dp"
+                            },
+                            "layout": {
+                                "type": "flex",
+                                "flexFlow": "row",
+                                "mainAlign": "spaceBetween",
+                                "crossAlign": "center"
+                            },
+                            "placement": {
+                                "mode": "flow",
+                                "width": "match",
+                                "height": "80dp",
+                                "alignSelf": "stretch"
+                            },
+                            "children": [
+                                {
+                                    "type": "label",
+                                    "id": "title",
+                                    "styleRefs": [
+                                        "app.listItemTitle"
+                                    ],
+                                    "labelProps": {
+                                        "text": "${constant.ess.i18n.batt_pwr}"
+                                    },
+                                    "placement": {
+                                        "mode": "flow",
+                                        "width": "wrap"
+                                    }
+                                },
+                                {
+                                    "type": "label",
+                                    "id": "value",
+                                    "styleRefs": [
+                                        "app.listItemValue"
+                                    ],
+                                    "labelProps": {
+                                        "text": "-- kW"
+                                    },
+                                    "placement": {
+                                        "mode": "flow",
+                                        "width": "wrap"
+                                    }
+                                },
+                                {
+                                    "type": "label",
+                                    "id": "dir",
+                                    "styleRefs": [
+                                        "app.listItemValue"
+                                    ],
+                                    "labelProps": {
+                                        "text": ""
+                                    },
+                                    "placement": {
+                                        "mode": "flow",
+                                        "width": "wrap"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "button",
+                            "id": "home_use",
+                            "events": [
+                                {
+                                    "type": "clicked",
+                                    "action": "ess.open.home_use"
+                                }
+                            ],
+                            "styleRefs": [
+                                "app.listItem"
+                            ],
+                            "style": {
+                                "borderWidth": "0dp",
+                                "padding": "8dp"
+                            },
+                            "layout": {
+                                "type": "flex",
+                                "flexFlow": "row",
+                                "mainAlign": "spaceBetween",
+                                "crossAlign": "center"
+                            },
+                            "placement": {
+                                "mode": "flow",
+                                "width": "match",
+                                "height": "80dp",
+                                "alignSelf": "stretch"
+                            },
+                            "children": [
+                                {
+                                    "type": "label",
+                                    "id": "title",
+                                    "styleRefs": [
+                                        "app.listItemTitle"
+                                    ],
+                                    "labelProps": {
+                                        "text": "${constant.ess.i18n.home_use}"
+                                    },
+                                    "placement": {
+                                        "mode": "flow",
+                                        "width": "wrap"
+                                    }
+                                },
+                                {
+                                    "type": "label",
+                                    "id": "value",
+                                    "styleRefs": [
+                                        "app.listItemValue"
+                                    ],
+                                    "labelProps": {
+                                        "text": "-- kW"
+                                    },
+                                    "placement": {
+                                        "mode": "flow",
+                                        "width": "wrap"
+                                    }
+                                },
+                                {
+                                    "type": "label",
+                                    "id": "dir",
+                                    "styleRefs": [
+                                        "app.listItemValue"
+                                    ],
+                                    "labelProps": {
+                                        "text": ""
+                                    },
+                                    "placement": {
+                                        "mode": "flow",
+                                        "width": "wrap"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "button",
+                            "id": "grid_pwr",
+                            "events": [
+                                {
+                                    "type": "clicked",
+                                    "action": "ess.open.grid"
+                                }
+                            ],
+                            "styleRefs": [
+                                "app.listItem"
+                            ],
+                            "style": {
+                                "borderWidth": "0dp",
+                                "padding": "8dp"
+                            },
+                            "layout": {
+                                "type": "flex",
+                                "flexFlow": "row",
+                                "mainAlign": "spaceBetween",
+                                "crossAlign": "center"
+                            },
+                            "placement": {
+                                "mode": "flow",
+                                "width": "match",
+                                "height": "80dp",
+                                "alignSelf": "stretch"
+                            },
+                            "children": [
+                                {
+                                    "type": "label",
+                                    "id": "title",
+                                    "styleRefs": [
+                                        "app.listItemTitle"
+                                    ],
+                                    "labelProps": {
+                                        "text": "${constant.ess.i18n.grid_pwr}"
+                                    },
+                                    "placement": {
+                                        "mode": "flow",
+                                        "width": "wrap"
+                                    }
+                                },
+                                {
+                                    "type": "label",
+                                    "id": "value",
+                                    "styleRefs": [
+                                        "app.listItemValue"
+                                    ],
+                                    "labelProps": {
+                                        "text": "-- kW"
+                                    },
+                                    "placement": {
+                                        "mode": "flow",
+                                        "width": "wrap"
+                                    }
+                                },
+                                {
+                                    "type": "label",
+                                    "id": "dir",
+                                    "styleRefs": [
+                                        "app.listItemValue"
+                                    ],
+                                    "labelProps": {
+                                        "text": ""
+                                    },
+                                    "placement": {
+                                        "mode": "flow",
+                                        "width": "wrap"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
