@@ -56,6 +56,20 @@ extern "C" void app_main(void)
 
         boost::this_thread::sleep_for(boost::chrono::seconds(10));
 
+        /* Wall-panel behaviour: open the ESS app on boot so the panel shows data
+         * without the user hunting for an icon. Resolve the id by manifest name
+         * rather than hardcoding it. */
+        for (const auto &info : system_instance->list_apps()) {
+            if (info.manifest.id == "brookesia.ess") {
+                BROOKESIA_LOGI("Auto-opening ESS app: id(%1%)", info.app_id);
+                auto open_result = system_instance->start_app(info.app_id);
+                if (!open_result) {
+                    BROOKESIA_LOGE("Auto-open ESS failed: %1%", open_result.error());
+                }
+                break;
+            }
+        }
+
         BROOKESIA_LOGI("=== System Example Completed ===");
     };
     {

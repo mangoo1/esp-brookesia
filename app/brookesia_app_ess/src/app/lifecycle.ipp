@@ -56,6 +56,7 @@ void EssApp::on_uninstall(system::core::AppContext &context) {
 }
 
 std::expected<void, std::string> EssApp::on_start(system::core::AppContext &context) {
+    BROOKESIA_LOGI("EssApp on_start");
     impl_->context = &context;
     
     // Subscribe to taps
