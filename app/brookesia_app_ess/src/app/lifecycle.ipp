@@ -58,6 +58,12 @@ void EssApp::on_uninstall(system::core::AppContext &context) {
 std::expected<void, std::string> EssApp::on_start(system::core::AppContext &context) {
     BROOKESIA_LOGI("EssApp on_start");
     impl_->context = &context;
+
+    /* Show the UI in Chinese. Must run before the first data update so the
+     * direction words pick the right language. */
+    if (auto lang_res = context.gui().set_language("zh_CN"); !lang_res) {
+        BROOKESIA_LOGW("Failed to set language zh_CN: %s", lang_res.error().c_str());
+    }
     
     // Subscribe to taps
     auto subscribe_res = subscribe_actions(context);
@@ -168,6 +174,11 @@ void EssApp::handle_data_update(const EssData& data) {
     if (!impl_->context) return;
     auto& gui = impl_->context->gui();
 
+    /* set_text does not resolve ${...}; give it the resolved word directly,
+     * picking the language from the GUI runtime. */
+    const bool zh = gui.get_language() == "zh_CN";
+    auto word = [zh](const char *en, const char *cn) { return std::string(zh ? cn : en); };
+
     // Battery %
     gui.set_text("/ess_home/page/batt_pct/value", std::to_string(data.soc) + " %");
     gui.set_text("/ess_home/page/batt_pct/dir", "");
@@ -175,20 +186,20 @@ void EssApp::handle_data_update(const EssData& data) {
     // Battery Power
     gui.set_text("/ess_home/page/batt_pwr/value", format_power(data.batt_power));
     std::string batt_dir;
-    if (data.batt_power > 0.05) batt_dir = "${i18n.text.charging}";
-    else if (data.batt_power < -0.05) batt_dir = "${i18n.text.discharging}";
-    else batt_dir = "${i18n.text.idle}";
+    if (data.batt_power > 0.05) batt_dir = word("Charging", "充电中");
+    else if (data.batt_power < -0.05) batt_dir = word("Discharging", "放电中");
+    else batt_dir = word("Idle", "待机");
     gui.set_text("/ess_home/page/batt_pwr/dir", batt_dir);
 
     // Home Load
     gui.set_text("/ess_home/page/home_use/value", format_power(data.home_load));
-    gui.set_text("/ess_home/page/home_use/dir", "${i18n.text.consuming}");
+    gui.set_text("/ess_home/page/home_use/dir", word("Consuming", "用电中"));
 
     // Grid Power
     gui.set_text("/ess_home/page/grid_pwr/value", format_power(data.grid_power));
     std::string grid_dir;
-    if (data.grid_power < -0.05) grid_dir = "${i18n.text.buying}";
-    else if (data.grid_power > 0.05) grid_dir = "${i18n.text.selling}";
-    else grid_dir = "${i18n.text.idle}";
+    if (data.grid_power < -0.05) grid_dir = word("Buying", "买电中");
+    else if (data.grid_power > 0.05) grid_dir = word("Selling", "卖电中");
+    else grid_dir = word("Idle", "待机");
     gui.set_text("/ess_home/page/grid_pwr/dir", grid_dir);
 }
