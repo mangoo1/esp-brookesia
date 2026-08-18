@@ -79,7 +79,7 @@
                             "placement": {
                                 "mode": "flow",
                                 "width": "match",
-                                "height": "80dp",
+                                "height": "64dp",
                                 "alignSelf": "stretch"
                             },
                             "children": [
@@ -95,6 +95,9 @@
                                     "placement": {
                                         "mode": "flow",
                                         "width": "wrap"
+                                    },
+                                    "style": {
+                                        "fontSize": "22sp"
                                     }
                                 },
                                 {
@@ -109,6 +112,9 @@
                                     "placement": {
                                         "mode": "flow",
                                         "width": "wrap"
+                                    },
+                                    "style": {
+                                        "fontSize": "48sp"
                                     }
                                 },
                                 {
@@ -123,6 +129,9 @@
                                     "placement": {
                                         "mode": "flow",
                                         "width": "wrap"
+                                    },
+                                    "style": {
+                                        "fontSize": "20sp"
                                     }
                                 }
                             ]
@@ -155,7 +164,7 @@
                             "placement": {
                                 "mode": "flow",
                                 "width": "match",
-                                "height": "80dp",
+                                "height": "64dp",
                                 "alignSelf": "stretch"
                             },
                             "children": [
@@ -171,6 +180,9 @@
                                     "placement": {
                                         "mode": "flow",
                                         "width": "wrap"
+                                    },
+                                    "style": {
+                                        "fontSize": "22sp"
                                     }
                                 },
                                 {
@@ -185,6 +197,9 @@
                                     "placement": {
                                         "mode": "flow",
                                         "width": "wrap"
+                                    },
+                                    "style": {
+                                        "fontSize": "48sp"
                                     }
                                 },
                                 {
@@ -199,6 +214,9 @@
                                     "placement": {
                                         "mode": "flow",
                                         "width": "wrap"
+                                    },
+                                    "style": {
+                                        "fontSize": "20sp"
                                     }
                                 }
                             ]
@@ -231,7 +249,7 @@
                             "placement": {
                                 "mode": "flow",
                                 "width": "match",
-                                "height": "80dp",
+                                "height": "64dp",
                                 "alignSelf": "stretch"
                             },
                             "children": [
@@ -247,6 +265,9 @@
                                     "placement": {
                                         "mode": "flow",
                                         "width": "wrap"
+                                    },
+                                    "style": {
+                                        "fontSize": "22sp"
                                     }
                                 },
                                 {
@@ -261,6 +282,9 @@
                                     "placement": {
                                         "mode": "flow",
                                         "width": "wrap"
+                                    },
+                                    "style": {
+                                        "fontSize": "48sp"
                                     }
                                 },
                                 {
@@ -275,6 +299,9 @@
                                     "placement": {
                                         "mode": "flow",
                                         "width": "wrap"
+                                    },
+                                    "style": {
+                                        "fontSize": "20sp"
                                     }
                                 }
                             ]
@@ -307,7 +334,7 @@
                             "placement": {
                                 "mode": "flow",
                                 "width": "match",
-                                "height": "80dp",
+                                "height": "64dp",
                                 "alignSelf": "stretch"
                             },
                             "children": [
@@ -323,6 +350,9 @@
                                     "placement": {
                                         "mode": "flow",
                                         "width": "wrap"
+                                    },
+                                    "style": {
+                                        "fontSize": "22sp"
                                     }
                                 },
                                 {
@@ -337,6 +367,9 @@
                                     "placement": {
                                         "mode": "flow",
                                         "width": "wrap"
+                                    },
+                                    "style": {
+                                        "fontSize": "48sp"
                                     }
                                 },
                                 {
@@ -351,6 +384,9 @@
                                     "placement": {
                                         "mode": "flow",
                                         "width": "wrap"
+                                    },
+                                    "style": {
+                                        "fontSize": "20sp"
                                     }
                                 }
                             ]
