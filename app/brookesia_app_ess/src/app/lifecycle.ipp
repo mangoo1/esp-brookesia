@@ -179,27 +179,34 @@ void EssApp::handle_data_update(const EssData& data) {
     const bool zh = gui.get_language() == "zh_CN";
     auto word = [zh](const char *en, const char *cn) { return std::string(zh ? cn : en); };
 
-    // Battery %
-    gui.set_text("/ess_home/page/card/batt_pct/value", std::to_string(data.soc) + " %");
-    gui.set_text("/ess_home/page/card/batt_pct/dir", "");
+    const std::string base = "/ess_home/page/ess_card/";
 
-    // Battery Power
-    gui.set_text("/ess_home/page/card/batt_pwr/value", format_power(data.batt_power));
-    std::string batt_dir;
-    if (data.batt_power > 0.05) batt_dir = word("Charging", "充电中");
-    else if (data.batt_power < -0.05) batt_dir = word("Discharging", "放电中");
-    else batt_dir = word("Idle", "待机");
-    gui.set_text("/ess_home/page/card/batt_pwr/dir", batt_dir);
+    // Battery: soc% + charge/discharge direction on one line
+    std::string batt_dir = (data.batt_power > 0.05) ? word(" Charging ", " 充电 ")
+                         : (data.batt_power < -0.05) ? word(" Discharging ", " 放电 ")
+                         : word(" Idle", " 待机");
+    std::string batt = std::to_string((int)data.soc) + "%" + batt_dir;
+    if (data.batt_power > 0.05 || data.batt_power < -0.05)
+        batt += format_power(data.batt_power > 0 ? data.batt_power : -data.batt_power);
+    gui.set_text(base + "row_batt/v_batt", batt);
 
-    // Home Load
-    gui.set_text("/ess_home/page/card/home_use/value", format_power(data.home_load));
-    gui.set_text("/ess_home/page/card/home_use/dir", word("Consuming", "用电中"));
+    // Home
+    gui.set_text(base + "row_home/v_home", format_power(data.home_load));
 
-    // Grid Power
-    gui.set_text("/ess_home/page/card/grid_pwr/value", format_power(data.grid_power));
-    std::string grid_dir;
-    if (data.grid_power < -0.05) grid_dir = word("Buying", "买电中");
-    else if (data.grid_power > 0.05) grid_dir = word("Selling", "卖电中");
-    else grid_dir = word("Idle", "待机");
-    gui.set_text("/ess_home/page/card/grid_pwr/dir", grid_dir);
+    // Solar
+    gui.set_text(base + "row_solar/v_solar", format_power(data.pv_power));
+
+    // Grid: buy/sell direction + power
+    std::string grid_dir = (data.grid_power < -0.05) ? word("Buying ", "买入 ")
+                         : (data.grid_power > 0.05) ? word("Selling ", "卖出 ")
+                         : word("Idle", "待机");
+    std::string grid = grid_dir;
+    if (data.grid_power > 0.05 || data.grid_power < -0.05)
+        grid += format_power(data.grid_power > 0 ? data.grid_power : -data.grid_power);
+    gui.set_text(base + "row_grid/v_grid", grid);
+
+    // Price (cents/kWh)
+    char pbuf[24];
+    snprintf(pbuf, sizeof(pbuf), "%.1f c", data.buy_price);
+    gui.set_text(base + "row_price/v_price", std::string(pbuf));
 }

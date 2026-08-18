@@ -11,7 +11,13 @@
                 "discharging": "放电中",
                 "buying": "买电中",
                 "selling": "卖电中",
-                "idle": "待机"
+                "idle": "待机",
+                "ess_title": "储能系统",
+                "batt": "电池",
+                "home": "家庭",
+                "solar": "光伏",
+                "grid": "电网",
+                "price": "电价"
             }
         }
     }

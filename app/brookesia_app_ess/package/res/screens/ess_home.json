@@ -1,12 +1,12 @@
 {
     "type": "viewScreen",
     "id": "ess_home",
-    "commonProps": {
-        "scrollable": false
-    },
     "styleRefs": [
         "app.page"
     ],
+    "commonProps": {
+        "scrollable": false
+    },
     "children": [
         {
             "type": "container",
@@ -17,32 +17,48 @@
             "layout": {
                 "type": "flex",
                 "flexFlow": "column",
-                "gap": "16dp"
+                "mainAlign": "start",
+                "crossAlign": "stretch",
+                "gap": "20dp"
             },
             "placement": {
                 "mode": "absolute",
-                "x": "100dp",
-                "y": "${expr((${env.heightDp} - 560dp) / 2)}",
-                "width": "600dp",
-                "height": "560dp"
+                "x": "80dp",
+                "y": "120dp",
+                "width": "640dp",
+                "height": "1040dp"
             },
             "children": [
                 {
-                    "type": "container",
-                    "id": "card",
-                    "commonProps": {
-                        "scrollable": false
-                    },
+                    "type": "button",
+                    "id": "ess_card",
+                    "interactionRefs": [
+                        "press.item"
+                    ],
                     "styleRefs": [
                         "app.card"
                     ],
-                    "style": {
-                        "padding": "16dp"
+                    "commonProps": {
+                        "scrollable": false
                     },
+                    "events": [
+                        {
+                            "type": "clicked",
+                            "effects": [
+                                {
+                                    "type": "emitAction",
+                                    "action": "ess.open.ess",
+                                    "requireValidPress": true
+                                }
+                            ]
+                        }
+                    ],
                     "layout": {
                         "type": "flex",
                         "flexFlow": "column",
-                        "gap": "12dp"
+                        "mainAlign": "start",
+                        "crossAlign": "stretch",
+                        "gap": "6dp"
                     },
                     "placement": {
                         "mode": "flow",
@@ -50,25 +66,32 @@
                         "height": "wrap",
                         "alignSelf": "stretch"
                     },
+                    "style": {
+                        "padding": "20dp"
+                    },
                     "children": [
                         {
-                            "type": "button",
-                            "id": "batt_pct",
-                            "interactionRefs": [
-                                "press.item"
-                            ],
-                            "events": [
-                                {
-                                    "type": "clicked",
-                                    "action": "ess.open.batt_pct"
-                                }
-                            ],
+                            "type": "label",
+                            "id": "ess_title",
                             "styleRefs": [
-                                "app.listItem"
+                                "app.listItemTitle"
                             ],
+                            "labelProps": {
+                                "text": "${constant.ess.i18n.ess_title}"
+                            },
                             "style": {
-                                "borderWidth": "0dp",
-                                "padding": "8dp"
+                                "fontSize": "30sp"
+                            },
+                            "placement": {
+                                "mode": "flow"
+                            }
+                        },
+                        {
+                            "type": "container",
+                            "id": "row_batt",
+                            "commonProps": {
+                                "scrollable": false,
+                                "clickable": false
                             },
                             "layout": {
                                 "type": "flex",
@@ -79,81 +102,50 @@
                             "placement": {
                                 "mode": "flow",
                                 "width": "match",
-                                "height": "64dp",
+                                "height": "56dp",
                                 "alignSelf": "stretch"
                             },
                             "children": [
                                 {
                                     "type": "label",
-                                    "id": "title",
+                                    "id": "row_batt_label",
                                     "styleRefs": [
                                         "app.listItemTitle"
                                     ],
                                     "labelProps": {
-                                        "text": "${constant.ess.i18n.batt_pct}"
-                                    },
-                                    "placement": {
-                                        "mode": "flow",
-                                        "width": "wrap"
+                                        "text": "${constant.ess.i18n.batt}"
                                     },
                                     "style": {
-                                        "fontSize": "22sp"
+                                        "fontSize": "26sp"
+                                    },
+                                    "placement": {
+                                        "mode": "flow"
                                     }
                                 },
                                 {
                                     "type": "label",
-                                    "id": "value",
+                                    "id": "v_batt",
                                     "styleRefs": [
                                         "app.listItemValue"
                                     ],
                                     "labelProps": {
-                                        "text": "-- %"
-                                    },
-                                    "placement": {
-                                        "mode": "flow",
-                                        "width": "wrap"
+                                        "text": "--"
                                     },
                                     "style": {
-                                        "fontSize": "48sp"
-                                    }
-                                },
-                                {
-                                    "type": "label",
-                                    "id": "dir",
-                                    "styleRefs": [
-                                        "app.listItemValue"
-                                    ],
-                                    "labelProps": {
-                                        "text": ""
+                                        "fontSize": "30sp"
                                     },
                                     "placement": {
-                                        "mode": "flow",
-                                        "width": "wrap"
-                                    },
-                                    "style": {
-                                        "fontSize": "20sp"
+                                        "mode": "flow"
                                     }
                                 }
                             ]
                         },
                         {
-                            "type": "button",
-                            "id": "batt_pwr",
-                            "interactionRefs": [
-                                "press.item"
-                            ],
-                            "events": [
-                                {
-                                    "type": "clicked",
-                                    "action": "ess.open.batt_pwr"
-                                }
-                            ],
-                            "styleRefs": [
-                                "app.listItem"
-                            ],
-                            "style": {
-                                "borderWidth": "0dp",
-                                "padding": "8dp"
+                            "type": "container",
+                            "id": "row_home",
+                            "commonProps": {
+                                "scrollable": false,
+                                "clickable": false
                             },
                             "layout": {
                                 "type": "flex",
@@ -164,81 +156,50 @@
                             "placement": {
                                 "mode": "flow",
                                 "width": "match",
-                                "height": "64dp",
+                                "height": "56dp",
                                 "alignSelf": "stretch"
                             },
                             "children": [
                                 {
                                     "type": "label",
-                                    "id": "title",
+                                    "id": "row_home_label",
                                     "styleRefs": [
                                         "app.listItemTitle"
                                     ],
                                     "labelProps": {
-                                        "text": "${constant.ess.i18n.batt_pwr}"
-                                    },
-                                    "placement": {
-                                        "mode": "flow",
-                                        "width": "wrap"
+                                        "text": "${constant.ess.i18n.home}"
                                     },
                                     "style": {
-                                        "fontSize": "22sp"
+                                        "fontSize": "26sp"
+                                    },
+                                    "placement": {
+                                        "mode": "flow"
                                     }
                                 },
                                 {
                                     "type": "label",
-                                    "id": "value",
+                                    "id": "v_home",
                                     "styleRefs": [
                                         "app.listItemValue"
                                     ],
                                     "labelProps": {
-                                        "text": "-- kW"
-                                    },
-                                    "placement": {
-                                        "mode": "flow",
-                                        "width": "wrap"
+                                        "text": "--"
                                     },
                                     "style": {
-                                        "fontSize": "48sp"
-                                    }
-                                },
-                                {
-                                    "type": "label",
-                                    "id": "dir",
-                                    "styleRefs": [
-                                        "app.listItemValue"
-                                    ],
-                                    "labelProps": {
-                                        "text": ""
+                                        "fontSize": "30sp"
                                     },
                                     "placement": {
-                                        "mode": "flow",
-                                        "width": "wrap"
-                                    },
-                                    "style": {
-                                        "fontSize": "20sp"
+                                        "mode": "flow"
                                     }
                                 }
                             ]
                         },
                         {
-                            "type": "button",
-                            "id": "home_use",
-                            "interactionRefs": [
-                                "press.item"
-                            ],
-                            "events": [
-                                {
-                                    "type": "clicked",
-                                    "action": "ess.open.home_use"
-                                }
-                            ],
-                            "styleRefs": [
-                                "app.listItem"
-                            ],
-                            "style": {
-                                "borderWidth": "0dp",
-                                "padding": "8dp"
+                            "type": "container",
+                            "id": "row_solar",
+                            "commonProps": {
+                                "scrollable": false,
+                                "clickable": false
                             },
                             "layout": {
                                 "type": "flex",
@@ -249,81 +210,50 @@
                             "placement": {
                                 "mode": "flow",
                                 "width": "match",
-                                "height": "64dp",
+                                "height": "56dp",
                                 "alignSelf": "stretch"
                             },
                             "children": [
                                 {
                                     "type": "label",
-                                    "id": "title",
+                                    "id": "row_solar_label",
                                     "styleRefs": [
                                         "app.listItemTitle"
                                     ],
                                     "labelProps": {
-                                        "text": "${constant.ess.i18n.home_use}"
-                                    },
-                                    "placement": {
-                                        "mode": "flow",
-                                        "width": "wrap"
+                                        "text": "${constant.ess.i18n.solar}"
                                     },
                                     "style": {
-                                        "fontSize": "22sp"
+                                        "fontSize": "26sp"
+                                    },
+                                    "placement": {
+                                        "mode": "flow"
                                     }
                                 },
                                 {
                                     "type": "label",
-                                    "id": "value",
+                                    "id": "v_solar",
                                     "styleRefs": [
                                         "app.listItemValue"
                                     ],
                                     "labelProps": {
-                                        "text": "-- kW"
-                                    },
-                                    "placement": {
-                                        "mode": "flow",
-                                        "width": "wrap"
+                                        "text": "--"
                                     },
                                     "style": {
-                                        "fontSize": "48sp"
-                                    }
-                                },
-                                {
-                                    "type": "label",
-                                    "id": "dir",
-                                    "styleRefs": [
-                                        "app.listItemValue"
-                                    ],
-                                    "labelProps": {
-                                        "text": ""
+                                        "fontSize": "30sp"
                                     },
                                     "placement": {
-                                        "mode": "flow",
-                                        "width": "wrap"
-                                    },
-                                    "style": {
-                                        "fontSize": "20sp"
+                                        "mode": "flow"
                                     }
                                 }
                             ]
                         },
                         {
-                            "type": "button",
-                            "id": "grid_pwr",
-                            "interactionRefs": [
-                                "press.item"
-                            ],
-                            "events": [
-                                {
-                                    "type": "clicked",
-                                    "action": "ess.open.grid"
-                                }
-                            ],
-                            "styleRefs": [
-                                "app.listItem"
-                            ],
-                            "style": {
-                                "borderWidth": "0dp",
-                                "padding": "8dp"
+                            "type": "container",
+                            "id": "row_grid",
+                            "commonProps": {
+                                "scrollable": false,
+                                "clickable": false
                             },
                             "layout": {
                                 "type": "flex",
@@ -334,59 +264,94 @@
                             "placement": {
                                 "mode": "flow",
                                 "width": "match",
-                                "height": "64dp",
+                                "height": "56dp",
                                 "alignSelf": "stretch"
                             },
                             "children": [
                                 {
                                     "type": "label",
-                                    "id": "title",
+                                    "id": "row_grid_label",
                                     "styleRefs": [
                                         "app.listItemTitle"
                                     ],
                                     "labelProps": {
-                                        "text": "${constant.ess.i18n.grid_pwr}"
-                                    },
-                                    "placement": {
-                                        "mode": "flow",
-                                        "width": "wrap"
+                                        "text": "${constant.ess.i18n.grid}"
                                     },
                                     "style": {
-                                        "fontSize": "22sp"
+                                        "fontSize": "26sp"
+                                    },
+                                    "placement": {
+                                        "mode": "flow"
                                     }
                                 },
                                 {
                                     "type": "label",
-                                    "id": "value",
+                                    "id": "v_grid",
                                     "styleRefs": [
                                         "app.listItemValue"
                                     ],
                                     "labelProps": {
-                                        "text": "-- kW"
-                                    },
-                                    "placement": {
-                                        "mode": "flow",
-                                        "width": "wrap"
+                                        "text": "--"
                                     },
                                     "style": {
-                                        "fontSize": "48sp"
+                                        "fontSize": "30sp"
+                                    },
+                                    "placement": {
+                                        "mode": "flow"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "container",
+                            "id": "row_price",
+                            "commonProps": {
+                                "scrollable": false,
+                                "clickable": false
+                            },
+                            "layout": {
+                                "type": "flex",
+                                "flexFlow": "row",
+                                "mainAlign": "spaceBetween",
+                                "crossAlign": "center"
+                            },
+                            "placement": {
+                                "mode": "flow",
+                                "width": "match",
+                                "height": "56dp",
+                                "alignSelf": "stretch"
+                            },
+                            "children": [
+                                {
+                                    "type": "label",
+                                    "id": "row_price_label",
+                                    "styleRefs": [
+                                        "app.listItemTitle"
+                                    ],
+                                    "labelProps": {
+                                        "text": "${constant.ess.i18n.price}"
+                                    },
+                                    "style": {
+                                        "fontSize": "26sp"
+                                    },
+                                    "placement": {
+                                        "mode": "flow"
                                     }
                                 },
                                 {
                                     "type": "label",
-                                    "id": "dir",
+                                    "id": "v_price",
                                     "styleRefs": [
                                         "app.listItemValue"
                                     ],
                                     "labelProps": {
-                                        "text": ""
-                                    },
-                                    "placement": {
-                                        "mode": "flow",
-                                        "width": "wrap"
+                                        "text": "--"
                                     },
                                     "style": {
-                                        "fontSize": "20sp"
+                                        "fontSize": "30sp"
+                                    },
+                                    "placement": {
+                                        "mode": "flow"
                                     }
                                 }
                             ]

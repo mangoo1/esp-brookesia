@@ -11,7 +11,13 @@
                 "discharging": "Discharging",
                 "buying": "Buying",
                 "selling": "Selling",
-                "idle": "Idle"
+                "idle": "Idle",
+                "ess_title": "ESS Energy",
+                "batt": "Battery",
+                "home": "Home",
+                "solar": "Solar",
+                "grid": "Grid",
+                "price": "Price"
             }
         }
     }
