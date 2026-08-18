@@ -146,7 +146,7 @@ std::expected<void, std::string> EssApp::on_action(
         else if (action == ACTION_OPEN_DETAIL_HOME) title = "Home Load";
         else if (action == ACTION_OPEN_DETAIL_GRID) title = "Grid Power";
         
-        context.gui().set_text("/ess_detail/page/title", title);
+        context.gui().set_text("/ess_detail/page/header/title", title);
     }
     return {};
 }
@@ -180,26 +180,26 @@ void EssApp::handle_data_update(const EssData& data) {
     auto word = [zh](const char *en, const char *cn) { return std::string(zh ? cn : en); };
 
     // Battery %
-    gui.set_text("/ess_home/page/batt_pct/value", std::to_string(data.soc) + " %");
-    gui.set_text("/ess_home/page/batt_pct/dir", "");
+    gui.set_text("/ess_home/page/card/batt_pct/value", std::to_string(data.soc) + " %");
+    gui.set_text("/ess_home/page/card/batt_pct/dir", "");
 
     // Battery Power
-    gui.set_text("/ess_home/page/batt_pwr/value", format_power(data.batt_power));
+    gui.set_text("/ess_home/page/card/batt_pwr/value", format_power(data.batt_power));
     std::string batt_dir;
     if (data.batt_power > 0.05) batt_dir = word("Charging", "充电中");
     else if (data.batt_power < -0.05) batt_dir = word("Discharging", "放电中");
     else batt_dir = word("Idle", "待机");
-    gui.set_text("/ess_home/page/batt_pwr/dir", batt_dir);
+    gui.set_text("/ess_home/page/card/batt_pwr/dir", batt_dir);
 
     // Home Load
-    gui.set_text("/ess_home/page/home_use/value", format_power(data.home_load));
-    gui.set_text("/ess_home/page/home_use/dir", word("Consuming", "用电中"));
+    gui.set_text("/ess_home/page/card/home_use/value", format_power(data.home_load));
+    gui.set_text("/ess_home/page/card/home_use/dir", word("Consuming", "用电中"));
 
     // Grid Power
-    gui.set_text("/ess_home/page/grid_pwr/value", format_power(data.grid_power));
+    gui.set_text("/ess_home/page/card/grid_pwr/value", format_power(data.grid_power));
     std::string grid_dir;
     if (data.grid_power < -0.05) grid_dir = word("Buying", "买电中");
     else if (data.grid_power > 0.05) grid_dir = word("Selling", "卖电中");
     else grid_dir = word("Idle", "待机");
-    gui.set_text("/ess_home/page/grid_pwr/dir", grid_dir);
+    gui.set_text("/ess_home/page/card/grid_pwr/dir", grid_dir);
 }
